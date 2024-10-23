@@ -51,6 +51,7 @@ class Marker(Cell):
     def __init__(self, size: int, centroid: Cell, id: int):
         super(Marker, self).__init__(size, centroid.row, centroid.col, centroid.zone, 0)
         self.__centroid__ = centroid
+        # self.delta = delta
         self.id = id
 
     @property
@@ -206,7 +207,7 @@ def main():
     assert(grid[1, 1].cx == 450*1.5)
     assert(grid[1, 1].cy == 450*1.5)
 
-    grid.create_marker(grid[1, 1], grid[1, 1][0, 0])
+    grid.create_marker(grid[1, 1], grid[1, 1][0, 0], 0)
     assert(grid[1, 1][1, 1].free == 0)
 
     p = grid.transform_cell(grid[5, 5])

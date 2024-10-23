@@ -40,18 +40,26 @@ class ParticleFilter(object):
 
         # Update step
         for pose in poses:
-            dist = np.sqrt((self.particles[:, 0] - pose.cx)**2
-                + (self.particles[:, 1] - pose.cy)**2)
-            dist = np.array(dist).reshape(-1, 1)
+            dist = np.sqrt((pose.cx - self.particles[:, 0])**2
+                + (pose.cy - self.particles[:, 1])**2)
+            dist = np.array(dist).reshape(-1, 1).transpose()
 
-            orientation_vec = np.array((np.cos(self.particles[:, 2]), np.sin(self.particles[:, 2]))) # et
             marker_vec = np.array((pose.cx - self.particles[:, 0], pose.cy - self.particles[:, 1]))/dist # el
-            hat_vec = (-np.sin(self.particles[:, 2]), np.cos(self.particles[:, 2])) # eth
-            angle = np.sign(np.dot(marker_vec, hat_vec))*np.arccos(np.dot(marker_vec, orientation_vec)) # el * eth , el * et
+            orientation_vec = np.array((np.cos(self.particles[:, 2]), np.sin(self.particles[:, 2]))) # et
+            hat_vec = np.array((-np.sin(self.particles[:, 2]), np.cos(self.particles[:, 2]))) # eth
+            
+            
+            
+            temp1 = np.sum(marker_vec * hat_vec, axis=0).reshape(-1, 1) # el * eth 
+            temp2 = np.sum(marker_vec * orientation_vec, axis=0).reshape(-1, 1)  #, el * et
+            angle = np.sign(temp1) * np.arccos(temp2) # el * eth , el * et
             angle = np.array(angle)
 
+            
+            
+            dist = dist.transpose()
+            
             weights *= sigma_dist * np.exp(-((dist*0.99) - dist)**2/((2*noise_dist)**2)) # pose.delta - 
-            print(np.array(weights).shape, angle.shape, dist.shape)
             weights *= sigma_angle*np.exp(-((angle * 0.99) - angle)**2/((2*noise_angle)**2)) # pose.rad -
 
         weights += 1.e-300 
@@ -76,7 +84,7 @@ class ParticleFilter(object):
         num_copies = (self.n*np.asarray(weights)).astype(int)
         k = 0
         for i in range(self.n):
-            for _ in range(num_copies[i]): # make n copies
+            for _ in range(num_copies[i][0]): # make n copies
                 indexes[k] = i
                 k += 1
 
@@ -96,10 +104,9 @@ class ParticleFilter(object):
 
     def run_pf(self):
 
-        
-        cell, orientation = self.update((1, 0), self.grid.markers)
-        print(cell, orientation)
-        exit(0)
+        for i in range(9):        
+            cell, orientation = self.update((450, 0), self.grid.markers)
+            print(cell, orientation*180/np.pi)
 
     
 

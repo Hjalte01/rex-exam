@@ -24,20 +24,21 @@ def rvec_to_rmatrix(v):
     return [x, y, z]
 
 class Estimate(Task):
-    def __init__(self, initial_control: Tuple[float, float]):
+    def __init__(self, aruco_dict, initial_control: Tuple[float, float]):
         super().__init__()
+        self.aruco_dict = aruco_dict
         self.control = initial_control
 
     def run(self, robot: ExamRobot):
         frame = robot.camera.capture()
-        corners, ids, _ = aruco.detectMarkers(frame, robot.aruco_dict)
+        corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
 
         if ids is None or len(ids) < 2: # Python might not shortcircuit
             return
         
         rvecs, tvecs = aruco.estimatePoseSingleMarkers(
             corners, 
-            robot.marker_length, 
+            robot.marker_size, 
             robot.cam_matrix,
             robot.dist_coeffs
         )
@@ -61,5 +62,5 @@ class Estimate(Task):
 
         x2, y2 = robot.grid.origo.cx, robot.grid.origo.cy
         delta = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-        self.control[0] = delta - self.control[0]
+        self.control[0] = self.control[0] - delta
         self.control[1] = heading

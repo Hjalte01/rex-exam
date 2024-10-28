@@ -8,10 +8,10 @@ from pathplaning.grid import Position
 
 class DetectEvent(Event):
     MARKER_DETECTED = EventType("EVENT-MARKER-DETECTED")
-    DETECTION_FINISHED = EventType("EVENT-DETECTION-FINISHED")
+    DETECTION_COMPLETE = EventType("EVENT-DETECTION-COMPLETE")
 
     def __init__(self, type, **kwords):
-        super().__init__(DetectEvent.MARKER_DETECTED, type, **kwords)
+        super().__init__(type, **kwords)
 
 def tvec_to_euclidean(v):
     return np.linalg.norm(v)*1000 
@@ -31,28 +31,24 @@ def rvec_to_rmatrix(v):
     return [x, y, z]
 
 class Detect(State):
-    def __init__(self):
+    def __init__(self, aruco_dict):
         super().__init__("STATE_DETECT")
+        self.aruco_dict = aruco_dict
         self.first = None
-        self.moving = False
     
     def run(self, robot: ExamRobot):
-        if not self.moving:
-            self.moving = True
-            robot.go_diff(40, 40, 1, 0)
-            return
-        
         robot.stop()
         sleep(0.1)
         frame = robot.camera.capture()
-        corners, ids, _ = aruco.detectMarkers(frame, robot.aruco_dict)
+        corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
         
         if ids is None:
+            robot.go_diff(40, 40, 1, 0)
             return
         
         rvecs, tvecs = aruco.estimatePoseSingleMarkers(
             corners, 
-            robot.marker_length, 
+            robot.marker_size, 
             robot.cam_matrix,
             robot.dist_coeffs
         )
@@ -77,7 +73,7 @@ class Detect(State):
             if self.first is None:
                 self.first = theta
             elif theta > self.first:
-                self.fire(DetectEvent(DetectEvent.DETECTION_FINISHED, id=id))
+                self.fire(DetectEvent(DetectEvent.DETECTION_COMPLETE, id=id))
                 self.done(True)
 
         if self.done():

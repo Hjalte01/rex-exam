@@ -21,6 +21,7 @@ class Camera(object):
         super(Camera, self).__init__()
 
         self.strategy = strategy
+        self.img_size = img_size
         if  strategy == Camera.Strategy.PI_CAMERA \
             or strategy == Camera.Strategy.PI_CAMERA_REQ:
                 self.__cam__ = picamera2.Picamera2()

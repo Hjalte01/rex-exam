@@ -55,7 +55,7 @@ class ParticleFilter(object):
                 temp1 = np.sum(marker_vec * hat_vec, axis=0).reshape(-1, 1) # el * eth 
                 temp2 = np.sum(marker_vec * orientation_vec, axis=0).reshape(-1, 1)  #, el * et
                 angle = np.sign(temp1) * np.arccos(temp2) # el * eth , el * et
-                angle = np.array(angle)            
+                angle = np.array(angle)
                 dist = dist.transpose()
                 
                 weights *= sigma_dist * np.exp(-(marker.delta - dist)**2/((2*noise_dist)**2)) # pose.delta - 
@@ -106,22 +106,30 @@ class ParticleFilter(object):
         weights.fill(1.0/self.n)
 
     def run_pf(self):
-        n = 15
+        n = 5
         marker = [
             [10, 20],
-            [18, 11],
-            [9, 0],
-            [0, 11]
+            [20, 10],
+            [10, 0],
+            [0, 10]
         ]
         for i in range(1, n):      
             #
             dist = np.sqrt(1**2+ 1**2) # 45 cm
-            theta = 0 # 45 deg
+            theta = np.pi/4 # 45 deg
             marker_poses = []
             for mark in marker:
                 dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
-                marker_poses.append(Position(dist, np.pi/4))
-                print(dist)
+                marker_theta = np.arctan2(mark[0]-i, mark[1]-i) 
+                # marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
+                # marker_theta = marker_theta - theta
+                temp = Position(dist, marker_theta)
+                # temp.x = mark[0]
+                # temp.y = mark[1]
+                marker_poses.append(temp)
+                
+                
+                # print(marker_theta, marker_theta*180/np.pi)
         
             cell, orientation = self.update((dist, theta), marker_poses)
             print(cell, orientation*180/np.pi)

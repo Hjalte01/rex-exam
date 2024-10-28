@@ -3,7 +3,7 @@ import numpy as np
 from numpy import random as rnd
 # from types import List, Tuple
 
-noise_dist = 150
+noise_dist = 0.05
 noise_angle = 0.2
 sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
 sigma_angle = 1/np.sqrt(2*np.pi*np.power(noise_angle, 2))
@@ -15,8 +15,8 @@ class ParticleFilter(object):
         self.grid = grid
         self.particles = np.ndarray((self.n, 3))
 
-        self.particles[:, 0] = rnd.uniform(0, len(grid) * grid.zone_size, self.n)
-        self.particles[:, 1] = rnd.uniform(0, len(grid) * grid.zone_size, self.n)
+        self.particles[:, 0] = rnd.uniform(0, 20, self.n)
+        self.particles[:, 1] = rnd.uniform(0, 20, self.n)
         self.particles[:, 2] = rnd.uniform(0, 2 * np.pi, self.n)
         self.weights = np.array((self.n))
         self.weights.fill(1/self.n)
@@ -37,38 +37,30 @@ class ParticleFilter(object):
         self.particles[:, 1] += (delta)*np.sin(self.particles[:, 2]) 
         weights = np.ones((self.n, 1))
 
-        # take a photo get markers
-        observed_markers = {
-            1: (450*9, 0*np.pi/180),
-            2: (450*9, 90*np.pi/180)
-        }
-        if not isinstance(observed_markers, type(None)):
+        if not isinstance(poses, type(None)):
             # Update step 
-            for index, (id, (marker_delta, marker_rad)) in enumerate(observed_markers.items()):
-                marker = next((m for m in self.grid.markers if m.id == id), None)
+            for marker in poses:
                 # print(id, marker)
                 if marker is None:
                     continue
-                # print(marker.id, marker.cx, marker.cy)
 
-                dist = np.sqrt((marker.cx - self.particles[:, 0])**2
-                    + (marker.cy - self.particles[:, 1])**2)
+                dist = np.sqrt((marker.x - self.particles[:, 0])**2
+                    + (marker.y - self.particles[:, 1])**2)
                 dist = np.array(dist).reshape(-1, 1).transpose()
 
-                marker_vec = np.array((marker.cx - self.particles[:, 0], marker.cy - self.particles[:, 1]))/dist # el
+                marker_vec = np.array((marker.x - self.particles[:, 0], marker.y - self.particles[:, 1]))/dist # el
                 orientation_vec = np.array((np.cos(self.particles[:, 2]), np.sin(self.particles[:, 2]))) # et
                 hat_vec = np.array((-np.sin(self.particles[:, 2]), np.cos(self.particles[:, 2]))) # eth
                 
                 temp1 = np.sum(marker_vec * hat_vec, axis=0).reshape(-1, 1) # el * eth 
                 temp2 = np.sum(marker_vec * orientation_vec, axis=0).reshape(-1, 1)  #, el * et
                 angle = np.sign(temp1) * np.arccos(temp2) # el * eth , el * et
-                angle = np.array(angle)            
+                angle = np.array(angle)
                 dist = dist.transpose()
                 
-                weights *= sigma_dist * np.exp(-(marker_delta - dist)**2/((2*noise_dist)**2)) # pose.delta - 
-                weights *= sigma_angle*np.exp(-(marker_rad - angle)**2/((2*noise_angle)**2)) # pose.rad -
+                weights *= sigma_dist * np.exp(-(marker.delta - dist)**2/((2*noise_dist)**2)) # pose.delta - 
+                weights *= sigma_angle*np.exp(-(marker.rad - angle)**2/((2*noise_angle)**2)) # pose.rad -
             
-            print(min(weights), max(weights))
             
             weights += 1.e-300 
             weights /= sum(weights)
@@ -77,13 +69,14 @@ class ParticleFilter(object):
             indexes = self.residual_resample(weights)
             self.resample_from_index(indexes, weights)
         else:
-            for i in len(weights):
+            for i in range(len(weights)):
                 weights[i] = 1/self.n
         # estimate step
         pos = np.average(self.particles[:, :2], weights=weights, axis=0)
         orientation = np.average(self.particles[:, 2], weights=weights)
 
         return self.grid.transform_xy(pos[0], pos[1]), orientation
+        # return (pos[0], pos[1]), orientation
 
 
     # https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/12-Particle-Filters.ipynb
@@ -113,9 +106,32 @@ class ParticleFilter(object):
         weights.fill(1.0/self.n)
 
     def run_pf(self):
-
-        for i in range(15):        
-            cell, orientation = self.update((450, 0.25*np.pi))
+        n = 19
+        marker = [[1, 20],
+            [10, 20],
+            [20, 10],
+            [10, 0],
+            [0, 10]
+        ]
+        for i in range(1, n):      
+            #
+            dist = np.sqrt(1**2+ 1**2) # 45 cm
+            theta = np.pi/4 # 45 deg
+            marker_poses = []
+            for mark in marker:
+                dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
+                marker_theta = np.arctan2(mark[1]-i, mark[0]-i) 
+                # marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
+                # marker_theta = marker_theta - theta
+                temp = Position(dist, marker_theta)
+                temp.x = mark[0]
+                temp.y = mark[1]
+                marker_poses.append(temp)
+                
+                
+                # print(marker_theta, marker_theta*180/np.pi)
+        
+            cell, orientation = self.update((dist, theta), marker_poses)
             print(cell, orientation*180/np.pi)
 
     
@@ -130,7 +146,7 @@ def main():
     # observered postition from particles to markers
 
 
-    pf = ParticleFilter(100000, grid)
+    pf = ParticleFilter(1000, grid)
     pf.run_pf()
 
 main()

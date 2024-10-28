@@ -3,7 +3,7 @@ import numpy as np
 from numpy import random as rnd
 # from types import List, Tuple
 
-noise_dist = 150
+noise_dist = 0.05
 noise_angle = 0.2
 sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
 sigma_angle = 1/np.sqrt(2*np.pi*np.power(noise_angle, 2))
@@ -75,8 +75,8 @@ class ParticleFilter(object):
         pos = np.average(self.particles[:, :2], weights=weights, axis=0)
         orientation = np.average(self.particles[:, 2], weights=weights)
 
-        # return self.grid.transform_xy(pos[0], pos[1]), orientation
-        return (pos[0], pos[1]), orientation
+        return self.grid.transform_xy(pos[0], pos[1]), orientation
+        # return (pos[0], pos[1]), orientation
 
 
     # https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/12-Particle-Filters.ipynb
@@ -106,8 +106,8 @@ class ParticleFilter(object):
         weights.fill(1.0/self.n)
 
     def run_pf(self):
-        n = 5
-        marker = [
+        n = 19
+        marker = [[1, 20],
             [10, 20],
             [20, 10],
             [10, 0],
@@ -120,12 +120,12 @@ class ParticleFilter(object):
             marker_poses = []
             for mark in marker:
                 dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
-                marker_theta = np.arctan2(mark[0]-i, mark[1]-i) 
+                marker_theta = np.arctan2(mark[1]-i, mark[0]-i) 
                 # marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
                 # marker_theta = marker_theta - theta
                 temp = Position(dist, marker_theta)
-                # temp.x = mark[0]
-                # temp.y = mark[1]
+                temp.x = mark[0]
+                temp.y = mark[1]
                 marker_poses.append(temp)
                 
                 
@@ -146,7 +146,7 @@ def main():
     # observered postition from particles to markers
 
 
-    pf = ParticleFilter(100000, grid)
+    pf = ParticleFilter(1000, grid)
     pf.run_pf()
 
 main()

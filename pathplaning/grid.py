@@ -8,8 +8,9 @@ class Position(object):
     """
     Represents a position in a 2D plane.
     """
-    def __init__(self, delta: float, angle: float):
+    def __init__(self, delta: float, angle: float, id: int = 0):
         super(Position, self).__init__()
+        self.id = id
         self.delta = delta
         self.rad = angle
         self.deg = np.rad2deg(angle)

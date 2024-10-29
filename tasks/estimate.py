@@ -30,7 +30,7 @@ class Estimate(Task):
         self.control = initial_control
 
     def run(self, robot: ExamRobot):
-        frame = robot.camera.capture()
+        frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
 
         if ids is None or len(ids) < 2: # Python might not shortcircuit

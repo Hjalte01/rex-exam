@@ -39,7 +39,7 @@ class Detect(State):
     def run(self, robot: ExamRobot):
         robot.stop()
         sleep(0.1)
-        frame = robot.camera.capture()
+        frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
         
         if ids is None:
@@ -73,7 +73,7 @@ class Detect(State):
             if self.first is None:
                 self.first = theta
             elif theta > self.first:
-                self.fire(DetectEvent(DetectEvent.DETECTION_COMPLETE, id=id))
+                self.fire(DetectEvent(DetectEvent.DETECTION_COMPLETE))
                 self.done(True)
 
         if self.done():

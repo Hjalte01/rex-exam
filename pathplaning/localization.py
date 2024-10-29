@@ -1,4 +1,4 @@
-from grid import Position, Grid
+from pathplaning.grid import Position, Grid
 import numpy as np
 from numpy import random as rnd
 import matplotlib.pyplot as plt
@@ -198,7 +198,6 @@ def main():
 
     pf = ParticleFilter(100000, grid)
     pf.run_pf()
-
-main()
+if __name__ == "__main__":
+    main()
         
-

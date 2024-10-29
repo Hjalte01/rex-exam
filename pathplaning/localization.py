@@ -174,7 +174,7 @@ class ParticleFilter(object):
                 marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
                 # marker_theta = marker_theta - theta
                 temp = Position(marker_dist, marker_theta, mark[2])
-                temp.x = temp.x + guess[0] + np.cos(theta)*dist # from origin to x + guess pos.x
+                temp.x = temp.x + guess[0] + np.cos(theta)*dist # from origin to x + guess pos.x + current direction * delta
                 temp.y = temp.y + guess[1] + np.sin(theta)*dist
                 # print(f"({temp.x}, {temp.y}) - ({guess[0]}, {guess[1]}) & {marker_dist}")
                 marker_poses.append(temp)

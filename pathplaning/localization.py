@@ -1,6 +1,7 @@
 from grid import Position, Grid
 import numpy as np
 from numpy import random as rnd
+import matplotlib.pyplot as plt
 # from types import List, Tuple
 
 noise_dist = 0.05
@@ -22,7 +23,7 @@ class ParticleFilter(object):
         self.weights.fill(1/self.n)
     
 
-    def update(self, control: tuple[float, float], poses: list[Position]):
+    def update(self, control: tuple[float, float], poses: list[Position], visualize: bool=False):
         if (len(poses) < 2):
             return None, None
         
@@ -58,7 +59,12 @@ class ParticleFilter(object):
                 angle = np.array(angle)
                 dist = dist.transpose()
                 
-                weights *= sigma_dist * np.exp(-(marker.delta - dist)**2/((2*noise_dist)**2)) # pose.delta - 
+                weights *= sigma_dist 
+                dist_delta = marker.delta - dist
+                noise_term = (2*noise_dist)**2
+                exp_term = -(dist_delta**2)/(noise_term)
+                weights *= np.exp(exp_term) # pose.delta - 
+                # weights *= sigma_dist * np.exp(-(marker.delta - dist)**2/((2*noise_dist)**2)) # pose.delta - 
                 weights *= sigma_angle*np.exp(-(marker.rad - angle)**2/((2*noise_angle)**2)) # pose.rad -
             
             
@@ -74,6 +80,10 @@ class ParticleFilter(object):
         # estimate step
         pos = np.average(self.particles[:, :2], weights=weights, axis=0)
         orientation = np.average(self.particles[:, 2], weights=weights)
+
+        # visualization option
+        if visualize:
+            self.visualize_particles(poses)
 
         return self.grid.transform_xy(pos[0], pos[1]), orientation
         # return (pos[0], pos[1]), orientation
@@ -105,19 +115,39 @@ class ParticleFilter(object):
         weights.resize(len(self.particles))
         weights.fill(1.0/self.n)
 
+
+    def visualize_particles(self, poses):
+        plt.clf()  # Clear the figure for the next frame
+        plt.scatter(self.particles[:, 0], self.particles[:, 1], s=10, c='blue', label="Particles")
+        
+        # Plot the markers
+        for pose in poses:
+            if pose is not None:
+                plt.plot(pose.x, pose.y, 'ro', markersize=8, label="Marker" if 'Marker' not in plt.gca().get_legend_handles_labels()[1] else "")
+        global index
+        plt.plot(index, index, 'ro', markersize=8, label="Robot pos", color="green")
+        # plt.xlim(0, 20)
+        # plt.ylim(0, 20)
+        plt.xlabel("X position")
+        plt.ylabel("Y position")
+        plt.legend()
+        plt.draw()
+        plt.pause(1)  # Pause briefly to allow animation effect
+
+    index = 1
     def run_pf(self):
         n = 19
-        marker = [[1, 20],
-            [10, 20],
-            [20, 10],
-            [10, 0],
-            [0, 10]
-        ]
+        marker = [[10, 20], [20, 10], [10, 0], [0, 10]]
+        plt.ion()
+
         for i in range(1, n):      
-            #
-            dist = np.sqrt(1**2+ 1**2) # 45 cm
+            global index
+            index = i
+            diag = 0.1
+            dist = np.sqrt(diag**2 + diag**2) # 45 cm
             theta = np.pi/4 # 45 deg
             marker_poses = []
+
             for mark in marker:
                 dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
                 marker_theta = np.arctan2(mark[1]-i, mark[0]-i) 
@@ -129,10 +159,9 @@ class ParticleFilter(object):
                 marker_poses.append(temp)
                 
                 
-                # print(marker_theta, marker_theta*180/np.pi)
-        
-            cell, orientation = self.update((dist, theta), marker_poses)
+            cell, orientation = self.update((dist, theta), marker_poses, True)
             print(cell, orientation*180/np.pi)
+        plt.ioff()
 
     
 
@@ -146,7 +175,7 @@ def main():
     # observered postition from particles to markers
 
 
-    pf = ParticleFilter(1000, grid)
+    pf = ParticleFilter(10000, grid)
     pf.run_pf()
 
 main()

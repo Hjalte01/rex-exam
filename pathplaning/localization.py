@@ -2,10 +2,11 @@ from grid import Position, Grid
 import numpy as np
 from numpy import random as rnd
 import matplotlib.pyplot as plt
+
 # from types import List, Tuple
 
-noise_dist = 0.05
-noise_angle = 0.2
+noise_dist = 0.2
+noise_angle = 1
 sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
 sigma_angle = 1/np.sqrt(2*np.pi*np.power(noise_angle, 2))
 
@@ -85,8 +86,8 @@ class ParticleFilter(object):
         if visualize:
             self.visualize_particles(poses)
 
-        return self.grid.transform_xy(pos[0], pos[1]), orientation
-        # return (pos[0], pos[1]), orientation
+        # return self.grid.transform_xy(pos[0], pos[1]), orientation
+        return (pos[0], pos[1]), orientation
 
 
     # https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/12-Particle-Filters.ipynb
@@ -123,37 +124,38 @@ class ParticleFilter(object):
         # Plot the markers
         for pose in poses:
             if pose is not None:
+                # label just ensure that we don't see 4 markers in legend, but just one unique "marker" that represent all of them
                 plt.plot(pose.x, pose.y, 'ro', markersize=8, label="Marker" if 'Marker' not in plt.gca().get_legend_handles_labels()[1] else "")
         global index
-        plt.plot(index, index, 'ro', markersize=8, label="Robot pos", color="green")
+        plt.plot(index, index, 'c*', markersize=16, label="Robot pos")
         # plt.xlim(0, 20)
         # plt.ylim(0, 20)
         plt.xlabel("X position")
         plt.ylabel("Y position")
         plt.legend()
         plt.draw()
-        plt.pause(1)  # Pause briefly to allow animation effect
+        plt.pause(0.1)  # Pause briefly to allow animation effect
 
+    # global index used for plotting our location(green dot) remove this at some point af testing
     index = 1
     def run_pf(self):
-        n = 19
+        n = 20
         marker = [[10, 20], [20, 10], [10, 0], [0, 10]]
-        plt.ion()
 
         for i in range(1, n):      
             global index
             index = i
-            diag = 0.1
+            diag = 1
             dist = np.sqrt(diag**2 + diag**2) # 45 cm
             theta = np.pi/4 # 45 deg
             marker_poses = []
 
             for mark in marker:
-                dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
+                marker_dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
                 marker_theta = np.arctan2(mark[1]-i, mark[0]-i) 
-                # marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
+                marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
                 # marker_theta = marker_theta - theta
-                temp = Position(dist, marker_theta)
+                temp = Position(marker_dist, marker_theta)
                 temp.x = mark[0]
                 temp.y = mark[1]
                 marker_poses.append(temp)
@@ -161,7 +163,6 @@ class ParticleFilter(object):
                 
             cell, orientation = self.update((dist, theta), marker_poses, True)
             print(cell, orientation*180/np.pi)
-        plt.ioff()
 
     
 
@@ -175,7 +176,7 @@ def main():
     # observered postition from particles to markers
 
 
-    pf = ParticleFilter(10000, grid)
+    pf = ParticleFilter(100000, grid)
     pf.run_pf()
 
 main()

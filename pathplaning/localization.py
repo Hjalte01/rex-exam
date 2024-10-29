@@ -5,11 +5,8 @@ import matplotlib.pyplot as plt
 
 # from types import List, Tuple
 
-noise_dist = 0.2
-noise_angle = 1
-sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
+noise_angle = 5
 sigma_angle = 1/np.sqrt(2*np.pi*np.power(noise_angle, 2))
-
 class ParticleFilter(object):
     def __init__(self, n: int, grid: Grid):
         super(ParticleFilter, self).__init__()
@@ -27,6 +24,9 @@ class ParticleFilter(object):
     def update(self, control: tuple[float, float], poses: list[Position], visualize: bool=False):
         if (len(poses) < 2):
             return None, None
+        
+        noise_dist = control[0]/10
+        sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
         
         # Predict step
         # Update where the particles are heading 
@@ -117,15 +117,19 @@ class ParticleFilter(object):
         weights.fill(1.0/self.n)
 
 
-    def visualize_particles(self, poses):
+    def visualize_particles(self, poses: list[Position]):
         plt.clf()  # Clear the figure for the next frame
         plt.scatter(self.particles[:, 0], self.particles[:, 1], s=10, c='blue', label="Particles")
         
         # Plot the markers
         for pose in poses:
             if pose is not None:
-                # label just ensure that we don't see 4 markers in legend, but just one unique "marker" that represent all of them
-                plt.plot(pose.x, pose.y, 'ro', markersize=8, label="Marker" if 'Marker' not in plt.gca().get_legend_handles_labels()[1] else "")
+                # show know markers in red and unknow in black
+                if pose.id < 5:
+                    # label just ensure that we don't see 4 markers in legend, but just one unique "marker" that represent all of them
+                    plt.plot(pose.x, pose.y, 'ro', markersize=8, label="Marker" if 'Marker' not in plt.gca().get_legend_handles_labels()[1] else "")
+                else:
+                    plt.plot(pose.x, pose.y, 'ko', markersize=8, label="Unknown Marker" if 'Unknown Marker' not in plt.gca().get_legend_handles_labels()[1] else "")
         global index
         plt.plot(index, index, 'c*', markersize=16, label="Robot pos")
         # plt.xlim(0, 20)
@@ -140,7 +144,11 @@ class ParticleFilter(object):
     index = 1
     def run_pf(self):
         n = 20
-        marker = [[10, 20], [20, 10], [10, 0], [0, 10]]
+        marker = [[10, 20, 1], [20, 10, 2], [10, 0, 3], [0, 10, 4]]
+        # we only know the dist and angle to these markers, 
+        # but use in testing x and y for calculation of dist & angle
+        unknown_marker = [[6, 8, 5], [15, 19, 6]] 
+        guess = (n//2, n//2)
 
         for i in range(1, n):      
             global index
@@ -154,14 +162,26 @@ class ParticleFilter(object):
                 marker_dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
                 marker_theta = np.arctan2(mark[1]-i, mark[0]-i) 
                 marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
-                # marker_theta = marker_theta - theta
-                temp = Position(marker_dist, marker_theta)
+                temp = Position(marker_dist, marker_theta, mark[2])
                 temp.x = mark[0]
                 temp.y = mark[1]
                 marker_poses.append(temp)
+
+
+            for mark in unknown_marker:
+                marker_dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
+                marker_theta = np.arctan2(mark[1]-i, mark[0]-i) 
+                marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
+                # marker_theta = marker_theta - theta
+                temp = Position(marker_dist, marker_theta, mark[2])
+                temp.x = temp.x + guess[0] + np.cos(theta)*dist # from origin to x + guess pos.x
+                temp.y = temp.y + guess[1] + np.sin(theta)*dist
+                # print(f"({temp.x}, {temp.y}) - ({guess[0]}, {guess[1]}) & {marker_dist}")
+                marker_poses.append(temp)
                 
-                
+
             cell, orientation = self.update((dist, theta), marker_poses, True)
+            guess = cell
             print(cell, orientation*180/np.pi)
 
     

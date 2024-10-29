@@ -54,7 +54,12 @@ class Waitable(object):
         with self:
             Driver.Events.push(event)
 
+    def reset(self):
+        with self:
+            self.__wait__ = True
+
     def wait(self, signal: Callable[[], bool]=None):
+        self.reset()
         with self as lock:
             if signal:
                 lock.wait_for(signal)
@@ -76,16 +81,13 @@ class Waitable(object):
     def cancel(self):
         self.wake()
 
-    def reset(self):
-        with self:
-            self.__wait__ = True
 
 class Task(Waitable):
     """
     A Task represents a recurring task, that is run every cycle regardless of state. 
     """
     def __init__(self):
-        super().__init__()
+        super(Task, self).__init__()
         self.__done__ = False
 
     def done(self, flag=None):
@@ -100,8 +102,8 @@ class Task(Waitable):
 
     def reset(self):
         with self:
-            super().reset()
             self.__done__ = False
+        super().reset()
 
     def run(self, _: Robot):
         pass
@@ -111,7 +113,7 @@ class State(Task):
     A state represents a unique task. Only one state is running at any given time.
     """
     def __init__(self, id: object):
-        super().__init__()
+        super(State, self).__init__()
         self.id = id
 
     def __str__(self) -> str:
@@ -138,16 +140,14 @@ class Driver(Task):
             Driver.Waiters.__queue__.append(val)
 
     def __init__(self, robot: Robot, cycle=100, default_state: object = None, *states: List[State]):
-        super().__init__()
-        self.__wait__                 = False
+        super(Driver, self).__init__()
         self.__robot                  = robot
-        self.__cycle                   = cycle*0.001
+        self.__cycle                  = cycle*0.001
         self.__states                 = dict()
         self.__active_state: State    = None
         self.__thread: Thread         = None
         self.__events                 = dict()
         self.__tasks                  = list()
-        self.__signal                 = None
 
         if default_state:
             self.__default = default_state
@@ -177,9 +177,6 @@ class Driver(Task):
 
     def __runner(self):  
         while not self.done():
-            super().wait(self.__signal)
-            self.__signal = None
-
             # Run tasks
             for t in self.__tasks:
                 if t.done(): 
@@ -198,28 +195,32 @@ class Driver(Task):
                     if not e.type.id in self.__events.keys():
                         continue
 
-                    e.robot = self.__robot
-                    e.origin = self.__active_state
-                    for f in self.__events[e.type.id]:
-                        self.__call(f, e)
-
                     for val in Driver.Waiters.__queue__:
                         t, w = val
                         if t.id != e.type.id:
                             continue
 
                         Driver.Waiters.__queue__.remove(val)
-                        Waitable.wake(w)
+                        # Waitable.wake(w)
+                        w.wake()
+
+                    e.robot = self.__robot
+                    e.origin = self.__active_state
+                    for f in self.__events[e.type.id]:
+                        self.__call(f, e)
 
             sleep(self.__cycle)
                 
     def states(self):
         return (tuple(self.__states.keys()), tuple(self.__states.values()))
                 
-    def default(self, id: object):
+    def default(self, runable: State):
         if self.__thread:
             return
-        self.__default = id
+        if not runable.id in self.__states.keys():
+            self.__states[runable.id] = runable
+        self.__default = runable.id
+        self.__active_state = self.__states[self.__default]
 
     def add(self, runable: Task, default=False):
         if self.__thread:
@@ -228,8 +229,9 @@ class Driver(Task):
             if runable.id in self.__states.keys():
                 return
             if default:
-                self.__default = runable.id
-            self.__states[runable.id] = runable
+                self.default(runable)
+            else:
+                self.__states[runable.id] = runable
         else:
             if runable in self.__tasks:
                 return
@@ -279,15 +281,6 @@ class Driver(Task):
             self.__thread.join(10*self.__cycle)
             self.__thread = None
 
-    def wait(self, signal=None):
-        with self:
-            self.__signal = signal
-            self.__wait = True
-
-    def wait_for(self, _: EventType):
-        return
-
-    def reset(self):
-        with self:
-            self.__wait = False
-            self.__done = False
+    def wake(self):
+        self.__active_state.wake()
+        super().wake()

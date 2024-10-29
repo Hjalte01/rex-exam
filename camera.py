@@ -42,7 +42,7 @@ class Camera(object):
             # GStream configuration here.
             pass
         else:
-            self.__cam = cv2.VideoCapture(3)
+            self.__cam = cv2.VideoCapture(0)
 
         self.__task__ = CaptureTask(self.__cam)
 

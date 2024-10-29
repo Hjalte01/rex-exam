@@ -76,12 +76,17 @@ def mock():
             self.driver.stop()
         def capture(self):
             return self.cam.capture()
+        def default(self, state: State):
+            self.driver.default(state)
         def add(self, taskable: Task, default=False):
             self.driver.add(taskable, default)
         def switch(self, id):
             self.driver.switch(id)
         def register(self, id, listener: Callable[[Event], None]):
             self.driver.register(id, listener)
+        def wake(self):
+            self.driver.wake()
+            super().wake()
         def start(self):
             self.driver.start()
         def stop(self):

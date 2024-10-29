@@ -11,7 +11,7 @@ from tasks.estimate import Estimate
 PI_ENV              = False
 
 # Driver settings
-CYCLE               = CYCLE # 50ms
+CYCLE               = 100 # 50ms
 # Camera settings
 IMG_SIZE            = IMG_SIZE  # (1920, 1080)
 FPS                 = FPS       # 30
@@ -20,17 +20,21 @@ LANDMARK_SIZE       = LANDMARK_SIZE # 200mm - The size of a landmark (box with m
 ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
-MARKER_SIZE         = 124.02    # mm - The size of a marker on a landmark.
-BOARD_MARKER_SIZE   = 41.80     # mm - The size of a marker on a board.
+MARKER_SIZE         = 49.58     # mm - The size of a marker on a landmark.
+BOARD_MARKER_SIZE   = 24.74     # mm - The size of a marker on a board.
 BOARD_SHAPE         = (5, 5)    # m x n
 BOARD_GAP           = 2.48      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
-PASSES              = 3
+PASSES              = 12
 
-def handle_calibrate_event(event: CalibrateEvent):
+def handle_calibrate_pass_complete(event: CalibrateEvent):
+    event.origin.reset()
+    event.origin.wait()
+
+def handle_calibrate_complete(event: CalibrateEvent):
     np.savez(
-        path.abspath("./configs/calibration.npz"),
+        path.abspath("./configs/calibrateion.npz"),
         cam_matrix=event.cam_matrix,
         dist_coeffs=event.dist_coeffs
     )
@@ -42,12 +46,6 @@ def main():
         robot = ExamRobot(CYCLE, IMG_SIZE, FPS, ZONE_SIZE, ZONES, LANDMARK_SIZE)
     else:
         robot = mock()
-    robot.add(Estimate(ARUCO_DICT, (0, 0)))
-    detect_state = Detect(ARUCO_DICT)
-    calibrate_state = Calibrate(PASSES, ARUCO_DICT, BOARD_MARKER_SIZE, BOARD_SHAPE, BOARD_GAP)
-    robot.add(detect_state, default=True)
-    robot.add(calibrate_state)
-    robot.register(CalibrateEvent.CALIBRATE_COMPLETE, handle_calibrate_event)
 
     prompt = """
     Press "c" to calibrate.
@@ -55,31 +53,42 @@ def main():
     Press "e" to make an estimation.
     Press "d" to drive to start drive sequence.
     Press "s" to stop.
-    Press ESC to quit."""
+    Press "q" to quit.\n"""
 
     while True:
-        c = (input(prompt) + "").lower()[0]
+        c = (input(prompt) + "\n").lower()[0]
 
-        if c == 0x63:
-            robot.switch(Calibrate.ID)
-            robot.start()
+        if c == 'c':
+            started = False
+            robot.add(Calibrate(PASSES, ARUCO_DICT, BOARD_MARKER_SIZE, BOARD_SHAPE, BOARD_GAP), default=True)
+            robot.register(CalibrateEvent.CALIBRATE_COMPLETE, handle_calibrate_complete)
+            robot.register(CalibrateEvent.PASS_COMPLETE, handle_calibrate_pass_complete)
+            # robot.start()
 
             for i in range(PASSES):
-                print(f"Calibration pass {i + 1} of {PASSES}.")
-                robot.wait_for(CalibrateEvent.PASS_COMPLETE)
-
-                c = (input("\tPress \"c\" to continue.\n\tPress ESC to stop.\n") + "").lower()[0]
-                if c == 0x1B:
+                c = (input(
+                        "Calibration pass {0} of {1}. Press \"c\" to continue.\nPress \"q\" to stop.\n".format(i + 1, PASSES)) + "\n"
+                    ).lower()[0]
+                if c == 'q':
                     break
-        elif c == 0x70:
+
+                if not started:
+                    robot.start()
+                    started = True
+                else:
+                    robot.wake()
+
+                robot.wait_for(CalibrateEvent.PASS_COMPLETE)
+            robot.stop()
+        elif c == 'p':
             frame = robot.capture()
             cv2.imwrite(
                 path.abspath(
-                    "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y%m%dT%H%M%S'))
+                    "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
                 ),
                 frame
             )
-        elif c == 0x65:
+        elif c == 'e':
             from tasks.estimate import rvec_to_rmatrix, tvec_to_euclidean
             frame = robot.capture()
             corners, ids, _ = aruco.detectMarkers(frame, ARUCO_DICT)
@@ -87,27 +96,30 @@ def main():
             if ids is None:
                 continue
 
-            rvecs, tvecs = aruco.estimatePoseSingleMarkers(
+            config = np.load(path.abspath("./configs/calibration.npz"))
+            rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
                 corners, 
-                robot.marker_size, 
-                robot.cam_matrix,
-                robot.dist_coeffs
+                MARKER_SIZE*0.001, 
+                config["cam_matrix"],
+                config["dist_coeffs"]
             )
 
-            print("Delta: {0>11.3f}mm", tvec_to_euclidean(tvecs[0]))
+            print("Delta: {0:>11.3f}mm".format(tvec_to_euclidean(tvecs[0])))
             (pitch, yaw, roll) = rvec_to_rmatrix(rvecs[0])
             print(
-                "Pitch: {0>11.3f}deg\nYaw: {0>11.3f}deg\nRoll: {0>11.3f}".format(
+                "Pitch: {0:>11.3f}deg\nYaw: {1:>11.3f}deg\nRoll: {2:>11.3f}".format(
                     np.rad2deg(pitch),
                     np.rad2deg(yaw),
                     np.rad2deg(roll)
                 )
             )
-        elif c == 0x64:
+        elif c == 'd':
+            robot.add(Estimate(ARUCO_DICT, (0, 0)))
+            robot.add(Detect(ARUCO_DICT, default=True))
             robot.start()
-        elif c == 0x73:
+        elif c == 's':
             robot.stop()
-        elif c == 0x1B:
+        elif c == 'q':
             robot.stop()
             break
         

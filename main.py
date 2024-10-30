@@ -8,10 +8,10 @@ from states.calibrate import Calibrate, CalibrateEvent
 from states.detect import Detect
 from tasks.estimate import Estimate
 
-PI_ENV              = False
+PI_ENV              = True
 
 # Driver settings
-CYCLE               = 100 # 50ms
+CYCLE               = CYCLE # 50ms
 # Camera settings
 IMG_SIZE            = IMG_SIZE  # (1920, 1080)
 FPS                 = FPS       # 30
@@ -20,10 +20,10 @@ LANDMARK_SIZE       = LANDMARK_SIZE # 200mm - The size of a landmark (box with m
 ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
-MARKER_SIZE         = 49.58     # mm - The size of a marker on a landmark.
-BOARD_MARKER_SIZE   = 24.74     # mm - The size of a marker on a board.
+MARKER_SIZE         = 46.06     # mm - The size of a marker on a landmark.
+BOARD_MARKER_SIZE   = 36.33     # mm - The size of a marker on a board.
 BOARD_SHAPE         = (5, 5)    # m x n
-BOARD_GAP           = 2.48      # mm
+BOARD_GAP           = 1.84      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
 PASSES              = 12

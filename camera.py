@@ -51,10 +51,10 @@ class Camera(object):
         Stops the camera.
         """
         try:
-            self.__cam.stop()
+            self.__cam.close()
         except:
             pass
-        
+
 
     def capture(self):
         if self.strategy == Camera.Strategy.PI_CAMERA:
@@ -70,15 +70,7 @@ class Camera(object):
         else:
             _, frame = self.__cam.read()
             return frame
-
-    def stop(self):
-        """
-        Stops the camera.
-        """
-        try:
-            self.__cam.stop()
-        except:
-            pass
+        
 
 class CaptureTask(Task):
     def __init__(self, cam):

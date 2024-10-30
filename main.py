@@ -26,7 +26,7 @@ BOARD_SHAPE         = (5, 5)    # m x n
 BOARD_GAP           = 1.84      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
-PASSES              = 1
+PASSES              = 2
 
 def handle_calibrate_pass_complete(event: CalibrateEvent):
     event.origin.reset()

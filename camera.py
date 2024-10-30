@@ -45,6 +45,16 @@ class Camera(object):
             self.__cam = cv2.VideoCapture(0)
 
         self.__task__ = CaptureTask(self.__cam)
+    
+    def stop(self):
+        """
+        Stops the camera.
+        """
+        try:
+            self.__cam.stop()
+        except:
+            pass
+        
 
     def capture(self):
         if self.strategy == Camera.Strategy.PI_CAMERA:

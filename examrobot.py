@@ -33,6 +33,7 @@ class ExamRobot(Waitable, Robot):
 
     def __del__(self):
         Robot.__del__(self)
+        self.cam.stop()
     
     def capture(self):
         return self.cam.capture()

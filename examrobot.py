@@ -43,6 +43,10 @@ class ExamRobot(Waitable, Robot):
 
     def add(self, taskable: Task, default=False):
         self.driver.add(taskable, default)
+    
+    def wake(self):
+        self.driver.wake()
+        super().wake()
 
     def switch(self, id):
         self.driver.switch(id)

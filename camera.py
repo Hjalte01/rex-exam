@@ -27,7 +27,7 @@ class Camera(object):
         if strategy == Camera.Strategy.PI_CAMERA \
             or strategy == Camera.Strategy.PI_CAMERA_REQ:
                 self.__cam = picamera2.Picamera2()
-                self.config = self.cam.create_video_configuration({
+                self.config = self.__cam.create_video_configuration({
                     "size": img_size, 
                     "format": "RGB888"
                     },

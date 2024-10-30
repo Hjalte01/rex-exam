@@ -29,11 +29,14 @@ class Calibrate(State):
         )
 
     def run(self, robot: ExamRobot):
-        frame = robot.cam.capture()        
+        print("Line", 1)
+        frame = robot.cam.capture()   
+        print("Line", 2)     
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
+        print("Line", 3)
 
         if ids is None:
-            print("piss og lort")
+            print("Line", 4)
             return
         cv2.imwrite(
             path.abspath(

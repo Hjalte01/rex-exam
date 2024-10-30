@@ -1,4 +1,4 @@
-from pathplaning.grid import Position, Grid
+from grid import Position, Grid
 import numpy as np
 from numpy import random as rnd
 import matplotlib.pyplot as plt
@@ -14,8 +14,8 @@ class ParticleFilter(object):
         self.grid = grid
         self.particles = np.ndarray((self.n, 3))
 
-        self.particles[:, 0] = rnd.uniform(0, 20, self.n)
-        self.particles[:, 1] = rnd.uniform(0, 20, self.n)
+        self.particles[:, 0] = rnd.uniform(0, len(self.grid), self.n)
+        self.particles[:, 1] = rnd.uniform(0, len(self.grid), self.n)
         self.particles[:, 2] = rnd.uniform(0, 2 * np.pi, self.n)
         self.weights = np.array((self.n))
         self.weights.fill(1/self.n)
@@ -144,7 +144,7 @@ class ParticleFilter(object):
     index = 1
     def run_pf(self):
         n = 20
-        marker = [[10, 20, 1], [20, 10, 2], [10, 0, 3], [0, 10, 4]]
+        marker = [[0, 20, 1], [20, 10, 2], [10, 0, 3], [0, 10, 4]]
         # we only know the dist and angle to these markers, 
         # but use in testing x and y for calculation of dist & angle
         unknown_marker = [[6, 8, 5], [15, 19, 6]] 
@@ -153,7 +153,7 @@ class ParticleFilter(object):
         for i in range(1, n):      
             global index
             index = i
-            diag = 1
+            diag = 45
             dist = np.sqrt(diag**2 + diag**2) # 45 cm
             theta = np.pi/4 # 45 deg
             marker_poses = []

@@ -33,6 +33,7 @@ class Calibrate(State):
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
 
         if ids is None:
+            print("piss og lort")
             return
         cv2.imwrite(
             path.abspath(

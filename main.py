@@ -79,6 +79,7 @@ def main():
                     robot.wake()
 
                 robot.wait_for(CalibrateEvent.PASS_COMPLETE)
+                print("Line", 5)
             robot.stop()
         elif c == 'p':
             frame = robot.capture()

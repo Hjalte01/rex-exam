@@ -48,7 +48,7 @@ class Camera(object):
 
     def capture(self):
         if self.strategy == Camera.Strategy.PI_CAMERA:
-            return self.cam.capture_array("main")
+            return self.__cam.capture_array("main")
         elif self.strategy == Camera.Strategy.PI_CAMERA_REQ:
             return self.__task__.get()
         elif self.strategy == Camera.Strategy.GSTREAM:

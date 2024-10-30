@@ -11,7 +11,7 @@ from tasks.estimate import Estimate
 PI_ENV              = True
 
 # Driver settings
-CYCLE               = CYCLE # 50ms
+CYCLE               = 100 # 50ms
 # Camera settings
 IMG_SIZE            = IMG_SIZE  # (1920, 1080)
 FPS                 = FPS       # 30

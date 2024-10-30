@@ -57,7 +57,7 @@ def main():
 
     while True:
         c = (input(prompt) + "\n").lower()[0]
-
+        
         if c == 'c':
             started = False
             robot.add(Calibrate(PASSES, ARUCO_DICT, BOARD_MARKER_SIZE, BOARD_SHAPE, BOARD_GAP), default=True)
@@ -66,6 +66,13 @@ def main():
             # robot.start()
 
             for i in range(PASSES):
+                frame = robot.capture()
+                cv2.imwrite(
+                path.abspath(
+                    "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+                    ),
+                frame
+                )
                 c = (input(
                         "Calibration pass {0} of {1}. Press \"c\" to continue.\nPress \"q\" to stop.\n".format(i + 1, PASSES)) + "\n"
                     ).lower()[0]

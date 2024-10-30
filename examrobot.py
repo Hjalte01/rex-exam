@@ -26,7 +26,7 @@ class ExamRobot(Waitable, Robot):
         self.heading = 0.5 * np.pi
         self.grid = Grid((0, 0), zone_size, zones, landmark_size)
         # self.pf = ParticleFilter(Position(np.sqrt(2*(zone_size/2)**2), 0.25*np.pi), 1000, self.grid) 
-        self.cam = Camera(img_size, fps, Camera.Strategy.PI_CAMERA_REQ)
+        self.cam = Camera(img_size, fps, Camera.Strategy.PI_CAMERA)
         self.marker_size = landmark_size
         self.cam_matrix = None
         self.dist_coeffs = None

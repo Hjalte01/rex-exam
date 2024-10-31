@@ -1,10 +1,12 @@
+from datetime import datetime
+from os import path
 from typing import Callable
 import numpy as np
 from robot import Robot
 from camera import Camera
 from statedriver import Waitable, Driver, Event, State, Task
-from pathplaning.grid import Grid, Position
-from pathplaning.localization import ParticleFilter
+from pathplaning.grid import Grid
+# from pathplaning.localization import ParticleFilter
 
 # Driver settings
 CYCLE           = 50 # ms
@@ -23,17 +25,23 @@ class ExamRobot(Waitable, Robot):
         Waitable.__init__(self)
         Robot.__init__(self, port)
         self.driver = Driver(self, cycle)
-        self.heading = 0.5 * np.pi
         self.grid = Grid((0, 0), zone_size, zones, landmark_size)
-        # self.pf = ParticleFilter(Position(np.sqrt(2*(zone_size/2)**2), 0.25*np.pi), 1000, self.grid) 
         self.cam = Camera(img_size, fps, Camera.Strategy.PI_CAMERA)
-        self.marker_size = landmark_size
+        self.heading = 0
         self.cam_matrix = None
         self.dist_coeffs = None
+        self.log_file = open(
+            path.abspath(
+                "./logs/{0}.txt".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+            ),
+            "a"
+        )
+        self.__done = False
 
     def __del__(self):
         Robot.__del__(self)
         self.cam.stop()
+        self.log_file.close()
     
     def capture(self):
         return self.cam.capture()
@@ -43,6 +51,9 @@ class ExamRobot(Waitable, Robot):
 
     def add(self, taskable: Task, default=False):
         self.driver.add(taskable, default)
+
+    def switch(self, id: object):
+        self.driver.switch(id)
     
     def wake(self):
         self.driver.wake()
@@ -56,6 +67,12 @@ class ExamRobot(Waitable, Robot):
         
     def start(self):
         self.driver.start()
+
+    def done(self, flag=None):
+        with self:
+            if flag is not None:
+                self.__done = flag
+            return self.__done
 
     def stop(self):
         Robot.stop(self)

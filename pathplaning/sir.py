@@ -1,4 +1,5 @@
-from typing import Tuple
+from typing import List, Tuple
+from pathplaning.grid import Position
 import numpy as np
 
 def create_particles_uniform(n: int, xy_max: float, theta_max: float):
@@ -41,7 +42,7 @@ def update(particles: np.ndarray, weights: np.ndarray, zs: np.ndarray, markers: 
 def estimate(particles: np.ndarray, weights: np.ndarray):
     delta = np.average(particles[:, 0:2], weights=weights, axis=0)
     theta = np.average(particles[:, 2], weights=weights, axis=0)
-    return delta, theta, (np.average((particles[:, 0:2] - delta)**2, weights=weights, axis=0), np.average((particles[:, 2] - theta)**2, weights=weights, axis=0))
+    return delta*450, theta, (np.average((particles[:, 0:2] - delta)**2, weights=weights, axis=0), np.average((particles[:, 2] - theta)**2, weights=weights, axis=0))
 
 def resample_index(particles: np.ndarray, weights: np.ndarray, indices: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     particles[:] = particles[indices]
@@ -64,10 +65,12 @@ def resample_systematic(weights: np.ndarray) -> np.ndarray:
             j += 1
     return indices
 
-def particle_filter_update(u: Tuple[float, float], particles: np.ndarray, zs: np.ndarray, markers: np.ndarray):
+# def particle_filter_update(u: Tuple[float, float], particles: np.ndarray, zs: np.ndarray, markers: np.ndarray):
+def particle_filter_update(u: Tuple[float, float], particles: np.ndarray, poses: List[Position]):
     # TODO: Convert to class.
-    # TODO: Scale xy to grid. 
     # NOTE: PF should probably not own transformation of xy to cell, so handle this elsewhere (state/task).
+    zs = np.array([p.delta for p in poses])
+    markers = np.array([[p.x, p.y] for p in poses])
     weights = np.ones(len(particles))
     particles = predict(u, particles, (0.05, 0.2))                  # Tuple[noise_delta, noise_theta]
     weights = update(particles, weights, zs, markers, (0.05, 0.2))  # Tuple[noise_delta, noise_theta]

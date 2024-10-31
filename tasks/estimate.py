@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from cv2 import aruco
 from pathplaning.grid import Position
+from pathplaning.sir import particle_filter_update, create_particles_uniform
 from statedriver import Task
 from examrobot import ExamRobot
 
@@ -24,10 +25,14 @@ def rvec_to_rmatrix(v):
     return [x, y, z]
 
 class Estimate(Task):
-    def __init__(self, aruco_dict, initial_control: Tuple[float, float]):
+    def __init__(self, aruco_dict, marker_size, cam_matrix, dist_coeffs, initial_control: Tuple[float, float]):
         super().__init__()
         self.aruco_dict = aruco_dict
+        self.marker_size = marker_size
+        self.cam_matrix = cam_matrix
+        self.dist_coeffs = dist_coeffs
         self.control = initial_control
+        self.particles = create_particles_uniform(5000, 9, 2*np.pi)
 
     def run(self, robot: ExamRobot):
         frame = robot.cam.capture()
@@ -38,9 +43,9 @@ class Estimate(Task):
         
         rvecs, tvecs = aruco.estimatePoseSingleMarkers(
             corners, 
-            robot.marker_size, 
-            robot.cam_matrix,
-            robot.dist_coeffs
+            self.marker_size*0.001, 
+            self.cam_matrix,
+            self.dist_coeffs
         )
 
         first, last
@@ -57,10 +62,10 @@ class Estimate(Task):
                 first = theta
 
         x1, y1 = robot.grid.origo.cx, robot.grid.origo.cy
-        cell, heading = robot.pf.update(self.control, poses)
-        robot.grid.update(cell)
+        (x, y), heading = particle_filter_update(self.control, self.particles, poses)
+        robot.grid.update(robot.grid.transform_xy(x, y))
 
         x2, y2 = robot.grid.origo.cx, robot.grid.origo.cy
         delta = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-        self.control[0] = self.control[0] - delta
+        self.control[0] = delta
         self.control[1] = heading

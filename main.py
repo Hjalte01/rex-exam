@@ -5,13 +5,14 @@ import cv2
 from cv2 import aruco
 from examrobot import ExamRobot, mock, CYCLE, IMG_SIZE, FPS, ZONE_SIZE, ZONES, LANDMARK_SIZE
 from states.calibrate import Calibrate, CalibrateEvent
-from states.detect import Detect
+from states.detect import Detect, DetectEvent
+from states.drive import Drive, DriveEvent
 from tasks.estimate import Estimate
 
 PI_ENV              = True
 
 # Driver settings
-CYCLE               = 100 # 50ms
+CYCLE               = CYCLE # 50ms
 # Camera settings
 IMG_SIZE            = IMG_SIZE  # (1920, 1080)
 FPS                 = FPS       # 30
@@ -29,7 +30,6 @@ ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 PASSES              = 12
 
 def handle_calibrate_pass_complete(event: CalibrateEvent):
-    event.origin.reset()
     event.origin.wait()
 
 def handle_calibrate_complete(event: CalibrateEvent):
@@ -39,8 +39,13 @@ def handle_calibrate_complete(event: CalibrateEvent):
         dist_coeffs=event.dist_coeffs
     )
 
+def handle_detect_complete(event: DetectEvent):
+    event.robot.switch(Drive.ID)
+
+def handle_drive_complete(event: DriveEvent):
+    event.robot.done(True)
+
 def main():
-    # robot = ExamRobot(CYCLE, IMG_SIZE, FPS, ZONE_SIZE, ZONES, LANDMARK_SIZE)
     robot = None
     if PI_ENV:
         robot = ExamRobot(CYCLE, IMG_SIZE, FPS, ZONE_SIZE, ZONES, LANDMARK_SIZE)
@@ -61,23 +66,25 @@ def main():
         if c == 'c':
             started = False
             robot.add(Calibrate(PASSES, ARUCO_DICT, BOARD_MARKER_SIZE, BOARD_SHAPE, BOARD_GAP), default=True)
-            robot.register(CalibrateEvent.CALIBRATE_COMPLETE, handle_calibrate_complete)
+            robot.register(CalibrateEvent.COMPLETE, handle_calibrate_complete)
             robot.register(CalibrateEvent.PASS_COMPLETE, handle_calibrate_pass_complete)
-            # robot.start()
 
             for i in range(PASSES):
-                frame = robot.capture()
-                cv2.imwrite(
-                path.abspath(
-                    "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
-                    ),
-                frame
-                )
                 c = (input(
-                        "Calibration pass {0} of {1}. Press \"c\" to continue.\nPress \"q\" to stop.\n".format(i + 1, PASSES)) + "\n"
+                        "Calibration pass {0} of {1}.\n" 
+                        "Press \"c\" to continue.\n"
+                        "Press \"q\" to stop.".format(i + 1, PASSES)) + "\n"
                     ).lower()[0]
                 if c == 'q':
                     break
+
+                frame = robot.capture()
+                cv2.imwrite(
+                    path.abspath(
+                        "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+                    ),
+                    frame
+                )
 
                 if not started:
                     robot.start()
@@ -86,7 +93,6 @@ def main():
                     robot.wake()
 
                 robot.wait_for(CalibrateEvent.PASS_COMPLETE)
-                print("Line", 5)
             robot.stop()
         elif c == 'p':
             frame = robot.capture()
@@ -122,9 +128,17 @@ def main():
                 )
             )
         elif c == 'd':
-            robot.add(Estimate(ARUCO_DICT, (0, 0)))
-            robot.add(Detect(ARUCO_DICT, default=True))
+            config = np.load(path.abspath("./configs/calibration.npz"))
+            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (np.sqrt(90), 0)))
+            robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
+            robot.add(Drive([1, 4, 3, 2, 1]))
+            robot.register(DetectEvent.COMPLETE, handle_detect_complete)
+            robot.register(DriveEvent.COMPLETE, handle_drive_complete)
             robot.start()
+
+            while not robot.done():
+                robot.wait_for(DriveEvent.GOAL_VISITED)
+            robot.stop()
         elif c == 's':
             robot.stop()
         elif c == 'q':

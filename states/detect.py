@@ -7,11 +7,12 @@ from statedriver import Event, EventType, State
 from pathplaning.grid import Position
 
 class DetectEvent(Event):
-    MARKER_DETECTED = EventType("EVENT-MARKER-DETECTED")
-    DETECTION_COMPLETE = EventType("EVENT-DETECTION-COMPLETE")
+    DETECTED = EventType("EVENT-DETECT-DETECTED")
+    COMPLETE = EventType("EVENT-DETECT-COMPLETE")
 
     def __init__(self, type, **kwords):
         super().__init__(type, **kwords)
+        self.robot: ExamRobot = None
 
 def tvec_to_euclidean(v):
     return np.linalg.norm(v)*1000 
@@ -31,9 +32,14 @@ def rvec_to_rmatrix(v):
     return [x, y, z]
 
 class Detect(State):
-    def __init__(self, aruco_dict):
-        super().__init__("STATE_DETECT")
+    ID = "STATE_DETECT"
+
+    def __init__(self, aruco_dict, marker_size, cam_matrix, dist_coeffs):
+        super().__init__(Detect.ID)
         self.aruco_dict = aruco_dict
+        self.marker_size = marker_size
+        self.cam_matrix = cam_matrix
+        self.dist_coeffs = dist_coeffs
         self.first = None
     
     def run(self, robot: ExamRobot):
@@ -48,9 +54,9 @@ class Detect(State):
         
         rvecs, tvecs = aruco.estimatePoseSingleMarkers(
             corners, 
-            robot.marker_size, 
-            robot.cam_matrix,
-            robot.dist_coeffs
+            self.marker_size, 
+            self.cam_matrix,
+            self.dist_coeffs
         )
 
         first, last
@@ -59,7 +65,8 @@ class Detect(State):
             if not all(m.id != id for m in robot.grid.markers):
                 continue
 
-            self.fire(DetectEvent(DetectEvent.MARKER_DETECTED, id=id))
+            self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
+            robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))
 
             orientation = rvec_to_rmatrix(rvec)
             theta = (robot.heading + orientation[1])%2*np.pi
@@ -73,8 +80,9 @@ class Detect(State):
 
             if self.first is None:
                 self.first = theta
-            elif theta > self.first:
-                self.fire(DetectEvent(DetectEvent.DETECTION_COMPLETE))
+            elif theta >= self.first:
+                self.fire(DetectEvent(DetectEvent.COMPLETE))
+                robot.log_file.write("[LOG] {0} - Detect complete.".format(self))
                 self.done(True)
 
         if self.done():

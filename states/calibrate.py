@@ -9,7 +9,7 @@ from examrobot import ExamRobot
 
 class CalibrateEvent(Event):
     PASS_COMPLETE = EventType("EVENT-CALIBRATE-PASS-COMPLETE")
-    CALIBRATE_COMPLETE = EventType("EVENT-CALIBRATE-COMPLETE")
+    COMPLETE = EventType("EVENT-CALIBRATE-COMPLETE")
 
     def __init__(self, type, **kwords):
         super(CalibrateEvent, self).__init__(type, **kwords)
@@ -20,6 +20,7 @@ class Calibrate(State):
     def __init__(self, passes: int, aruco_dict, marker_length: float, board_shape: Tuple[int, int], board_gap: float):
         super(Calibrate, self).__init__(Calibrate.ID)
         self.passes = passes
+        self.max = passes
         self.corners =  np.empty((0, 1, 4, 2), np.float32)
         self.ids = np.empty((0, 1), np.int32)
         self.counts = np.empty((0, 1), np.int32)
@@ -29,14 +30,11 @@ class Calibrate(State):
         )
 
     def run(self, robot: ExamRobot):
-        print("Line", 1)
         frame = robot.cam.capture()   
-        print("Line", 2)     
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
-        print("Line", 3)
 
         if ids is None:
-            print("Line", 4)
+            robot.log_file.write("[LOG] {0} - Detected 0 markers.".format(self))
             return
         cv2.imwrite(
             path.abspath(
@@ -47,10 +45,11 @@ class Calibrate(State):
         self.corners = np.append(self.corners, corners, axis=0)
         self.ids = np.append(self.ids, ids, axis=0)
         self.counts = np.append(self.counts, [len(ids)])
-        
+
         self.passes -= 1
         if self.passes > 0:
             self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE))
+            robot.log_file.write("[LOG] {0} - Pass {1} of {2} complete. Detected {3} markers.".format(self, self.max - self.passes, self.max, len(ids)))
             return
         
         _, cam_matrix, dist_coeffs, _, _ = aruco.calibrateCameraAruco(
@@ -63,6 +62,11 @@ class Calibrate(State):
             None
         )
 
-        self.fire(
-            CalibrateEvent(CalibrateEvent.CALIBRATE_COMPLETE, cam_matrix=cam_matrix, dist_coeffs=dist_coeffs)
-        )
+        self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE))            
+        self.fire(CalibrateEvent(
+            CalibrateEvent.COMPLETE, 
+            cam_matrix=cam_matrix, 
+            dist_coeffs=dist_coeffs
+        ))
+        robot.log_file.write("[LOG] {0} - Pass {1} of {2} complete. Detected {3} markers.".format(self, self.max - self.passes, self.max, len(ids)))
+        robot.log_file.write("[LOG] {0} - Calibrate complete.".format(self))

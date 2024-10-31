@@ -39,7 +39,7 @@ class Detect(State):
     def run(self, robot: ExamRobot):
         robot.stop()
         sleep(0.1)
-        frame = robot.camera.capture()
+        frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
         
         if ids is None:
@@ -55,6 +55,7 @@ class Detect(State):
 
         first, last
         for i, (rvec, tvec, id) in enumerate(zip(rvecs, tvecs, ids)):
+            # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
             if not all(m.id != id for m in robot.grid.markers):
                 continue
 
@@ -73,7 +74,7 @@ class Detect(State):
             if self.first is None:
                 self.first = theta
             elif theta > self.first:
-                self.fire(DetectEvent(DetectEvent.DETECTION_COMPLETE, id=id))
+                self.fire(DetectEvent(DetectEvent.DETECTION_COMPLETE))
                 self.done(True)
 
         if self.done():

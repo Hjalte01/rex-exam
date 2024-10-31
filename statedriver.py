@@ -18,11 +18,12 @@ class EventType:
     def __str__(self):
         return self.id
 
-class Event:
+class Event(object):
     """
     Event objects are passed to event handlers.
     """
     def __init__(self, type: EventType, **kwords):
+        super(Event, self).__init__()
         self.type = type
         self.robot: Robot = None
         self.origin: State = None
@@ -53,7 +54,12 @@ class Waitable(object):
         with self:
             Driver.Events.push(event)
 
+    def reset(self):
+        with self:
+            self.__wait__ = True
+
     def wait(self, signal: Callable[[], bool]=None):
+        self.reset()
         with self as lock:
             if signal:
                 lock.wait_for(signal)
@@ -75,16 +81,13 @@ class Waitable(object):
     def cancel(self):
         self.wake()
 
-    def reset(self):
-        with self:
-            self.__wait__ = True
 
 class Task(Waitable):
     """
     A Task represents a recurring task, that is run every cycle regardless of state. 
     """
     def __init__(self):
-        super().__init__()
+        super(Task, self).__init__()
         self.__done__ = False
 
     def done(self, flag=None):
@@ -99,8 +102,8 @@ class Task(Waitable):
 
     def reset(self):
         with self:
-            super().reset()
             self.__done__ = False
+        super().reset()
 
     def run(self, _: Robot):
         pass
@@ -110,13 +113,13 @@ class State(Task):
     A state represents a unique task. Only one state is running at any given time.
     """
     def __init__(self, id: object):
-        super().__init__()
+        super(State, self).__init__()
         self.id = id
 
     def __str__(self) -> str:
         return "{0}<\"{1}\">".format(self.__class__.__qualname__, self.id)
     
-class Driver(Waitable):
+class Driver(Task):
     """
     A driver handles execution of runables(Task or State objects). 
     Runables are executed sequentially in parallel with the main thread and in a threadsafe context. 
@@ -137,155 +140,147 @@ class Driver(Waitable):
             Driver.Waiters.__queue__.append(val)
 
     def __init__(self, robot: Robot, cycle=100, default_state: object = None, *states: List[State]):
-        super().__init__()
-        self.__robot__                  = robot
-        self.__cycle__                   = cycle*0.001
-        self.__states__                 = dict()
-        self.__active_state__: State    = None
-        self.__thread__: Thread         = None
-        self.__events__                 = dict()
-        self.__tasks__                  = list()
-        self.__alive__                  = False
-        self.__wait__                   = False
-        self.__signal__                 = None
+        super(Driver, self).__init__()
+        self.__robot                  = robot
+        self.__cycle                  = cycle*0.001
+        self.__states                 = dict()
+        self.__active_state: State    = None
+        self.__thread: Thread         = None
+        self.__events                 = dict()
+        self.__tasks                  = list()
 
         if default_state:
-            self.__default__ = default_state
+            self.__default = default_state
         else:
-            self.__default__ = None
+            self.__default = None
 
         for arg in states:
             self.add(arg)
 
     def __str__(self):
-        return "Driver[{0}]".format(", ".join([x.__str__() for x in self.__states__.values()]))
+        return "Driver[{0}]".format(", ".join([x.__str__() for x in self.__states.values()]))
 
     def __len__(self):
-        return len(self.__states__)
-    
-    def __is_alive__(self):
-        with self:
-            return self.__alive__
+        return len(self.__states)
         
-    def __caller__(self, f, *args):
+    def __call(self, f, *args):
         with self:
             try:
-                    f(*args)
+                f(*args)
             except Exception:
-                print("[ERR] An exception was thrown while running state {0}.".format(self.__active_state__))
+                print("[ERR] An exception was thrown while running state {0}.".format(self.__active_state))
                 traceback.print_exc()
-                if self.__active_state__.id == self.__default__:
-                    self.__alive__ = False
+                if self.__active_state.id == self.__default:
+                    self.done(True)
                 else:
-                    self.switch(self.__default__)
+                    self.switch(self.__default)
 
-    def __runner__(self):  
-        while self.__is_alive__():
-            super().wait(self.__signal__ if self.__signal__ else None)
+    def __runner(self):  
+        while not self.done():
             # Run tasks
-            for t in self.__tasks__:
+            for t in self.__tasks:
                 if t.done(): 
                     continue
-                self.__caller__(t.run, self.__robot__)
+                self.__call(t.run, self.__robot)
 
             # Run the active state
-            if self.__active_state__.done():
-                self.switch(self.__default__)
-            self.__caller__(self.__active_state__.run, self.__robot__)
+            if self.__active_state.done():
+                self.switch(self.__default)
+            self.__call(self.__active_state.run, self.__robot)
 
             # Flush the event queue
             with self:
                 while len(Driver.Events.__queue__):
                     e = Driver.Events.__queue__.pop()
-                    if not e.type.id in self.__events__.keys():
+                    if not e.type.id in self.__events.keys():
                         continue
-                    e.robot = self.__robot__
-                    e.origin = self.__active_state__
-                    for f in self.__events__[e.type.id]:
-                        self.__caller__(f, e)
 
                     for val in Driver.Waiters.__queue__:
                         t, w = val
                         if t.id != e.type.id:
                             continue
-                        Driver.Waiters.__queue__.remove(val)
-                        Waitable.wake(w)
 
-            sleep(self.__cycle__)
+                        Driver.Waiters.__queue__.remove(val)
+                        # Waitable.wake(w)
+                        w.wake()
+
+                    e.robot = self.__robot
+                    e.origin = self.__active_state
+                    for f in self.__events[e.type.id]:
+                        self.__call(f, e)
+
+            sleep(self.__cycle)
                 
     def states(self):
-        return (tuple(self.__states__.keys()), tuple(self.__states__.values()))
+        return (tuple(self.__states.keys()), tuple(self.__states.values()))
                 
-    def default(self, id: object):
-        if self.__thread__:
+    def default(self, runable: State):
+        if self.__thread:
             return
-        self.__default__ = id
+        if not runable.id in self.__states.keys():
+            self.__states[runable.id] = runable
+        self.__default = runable.id
+        self.__active_state = self.__states[self.__default]
 
     def add(self, runable: Task, default=False):
-        if self.__thread__:
+        if self.__thread:
             return
         if isinstance(runable, State):
-            if runable.id in self.__states__.keys():
+            if runable.id in self.__states.keys():
                 return
             if default:
-                self.__default__ = runable.id
-            self.__states__[runable.id] = runable
+                self.default(runable)
+            else:
+                self.__states[runable.id] = runable
         else:
-            if runable in self.__tasks__:
+            if runable in self.__tasks:
                 return
-            self.__tasks__.append(runable)
+            self.__tasks.append(runable)
 
     def switch(self, id: object):
-        if self.__active_state__ and self.__active_state__.id == id:
+        if self.__active_state and self.__active_state.id == id:
             return
-        if not id in self.__states__.keys():
+        if not id in self.__states.keys():
             return print("[LOG] The state \"{0}\" has not been added to driver {1}.".format(id, self))
-        with self as lock:
-            lock.notify_all()
-            self.__active_state__.cancel()
-            self.__active_state__ = self.__states__[id]
-            self.__active_state__.reset()
-        print("[LOG] Switched to state {0}.".format(self.__active_state__))
+        with self:
+            self.__active_state.cancel()
+            self.__active_state = self.__states[id]
+            self.__active_state.reset()
+        print("[LOG] Switched to state {0}.".format(self.__active_state))
 
     def register(self, type: EventType, handler: Callable[[Event], None]):
         with self.__lock__:
-            if handler in self.__events__.setdefault(type.id, []):
+            if handler in self.__events.setdefault(type.id, []):
                 return
-            self.__events__[type.id].append(handler)
+            self.__events[type.id].append(handler)
 
     def unregister(self, type: EventType, handler: Callable[[Event], None]):
         with self.__lock__:
-            if not (type in self.__events__.keys()):
+            if not (type in self.__events.keys()):
                 return
-            self.__events__[type.id] = list(filter(lambda f: f is not handler, self.__events__[type.id]))
+            self.__events[type.id] = list(filter(lambda f: f is not handler, self.__events[type.id]))
 
     def start(self):
-
-        if self.__thread__:
+        if self.__thread:
             return
-        if not self.__default__:
+        if not self.__default:
             return print("[LOG] No default state for driver {0}. Skipping start.".format(self))
         print("[LOG] Starting driver {0}.".format(self))
-        self.__active_state__ = self.__states__[self.__default__]
-        self.__alive__ = True
-        self.__thread__ = Thread(target=self.__runner__, daemon=True)
-        self.__thread__.start()
+        self.reset()
+        self.__active_state = self.__states[self.__default]
+        self.__thread = Thread(target=self.__runner, daemon=True)
+        self.__thread.start()
 
     def stop(self):
-        if self.__thread__ is None:
+        if self.__thread is None:
             return
         print("[LOG] Stopping driver {0}.".format(self))
         with self.__lock__:
-            self.__active_state__.cancel()
-            self.__alive__ = False
-            self.wake()
-            self.__thread__.join(3*self.__cycle__)
-            self.__thread__ = None
+            self.__active_state.cancel()
+            self.cancel()
+            self.__thread.join(10*self.__cycle)
+            self.__thread = None
 
-    def wait(self, signal=None):
-        with self:
-            self.__signal__ = signal
-            self.__wait__ = True
-
-    def wait_for(self, _: EventType):
-        return
+    def wake(self):
+        self.__active_state.wake()
+        super().wake()

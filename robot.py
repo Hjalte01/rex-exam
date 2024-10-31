@@ -33,7 +33,17 @@ class Robot(object):
         sleep(2)
 
         print("Running ...")
+
+        # Our changes - constants for driving the robot
+        self.left_motor_diff = 0.875
+        self.leftSpeed = 40*self.left_motor_diff
+        self.rightSpeed = 40
+        self.forward_to_meter = 4.5
+        self.turn_1_degree = 1.32 / 90
+        self.current_angle = 0
+        # out changes
         
+
     def __del__(self):
         print("Shutting down the robot ...")
         
@@ -202,5 +212,38 @@ class Robot(object):
         step_rotate_right commands."""
         cmd='y' + str(turntime) + '\n'
         return self.send_command(cmd)
+    
+    # our changes -------------------------------------
+
+    # test section
+
+    def test_rotate(self):
+        """ Rotate robot by deg, if deg > 0 rotate right, if deg < 0 rotate left"""
         
+        self.rotate(360)
+
+    def test_move(self):
+        self.move(3)
+        
+    # main section
+
+
+    def rotate(self, input_deg):
+        """ Rotate robot by deg, if deg > 0 rotate right, if deg < 0 rotate left"""
+        print("current_angle: ", self.current_angle, "\ninput deg: ", input_deg)
+        deg = input_deg - self.current_angle
+        self.current_angle += deg
+        print("rotated deg by: ", deg)
+        if deg > 0:
+            self.go_diff(self.leftSpeed, self.rightSpeed, 1, 0)
+        else:
+            self.go_diff(self.leftSpeed, self.rightSpeed, 0, 1)
+        sleep(self.turn_1_degree*abs(deg))
+
+
+    def move(self, len):
+        """ Move robot by len meters"""
+        distance = self.forward_to_meter * len
+        self.go_diff(self.leftSpeed, self.rightSpeed, 1, 1)
+        sleep(distance)
 

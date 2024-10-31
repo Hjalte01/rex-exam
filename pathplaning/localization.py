@@ -1,13 +1,12 @@
-from grid import Position, Grid
+from pathplaning.grid import Position, Grid
 import numpy as np
 from numpy import random as rnd
+import matplotlib.pyplot as plt
+
 # from types import List, Tuple
 
-noise_dist = 0.05
-noise_angle = 0.2
-sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
+noise_angle = 5
 sigma_angle = 1/np.sqrt(2*np.pi*np.power(noise_angle, 2))
-
 class ParticleFilter(object):
     def __init__(self, n: int, grid: Grid):
         super(ParticleFilter, self).__init__()
@@ -22,9 +21,12 @@ class ParticleFilter(object):
         self.weights.fill(1/self.n)
     
 
-    def update(self, control: tuple[float, float], poses: list[Position]):
+    def update(self, control: tuple[float, float], poses: list[Position], visualize: bool=False):
         if (len(poses) < 2):
             return None, None
+        
+        noise_dist = control[0]/10
+        sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
         
         # Predict step
         # Update where the particles are heading 
@@ -58,7 +60,12 @@ class ParticleFilter(object):
                 angle = np.array(angle)
                 dist = dist.transpose()
                 
-                weights *= sigma_dist * np.exp(-(marker.delta - dist)**2/((2*noise_dist)**2)) # pose.delta - 
+                weights *= sigma_dist 
+                dist_delta = marker.delta - dist
+                noise_term = (2*noise_dist)**2
+                exp_term = -(dist_delta**2)/(noise_term)
+                weights *= np.exp(exp_term) # pose.delta - 
+                # weights *= sigma_dist * np.exp(-(marker.delta - dist)**2/((2*noise_dist)**2)) # pose.delta - 
                 weights *= sigma_angle*np.exp(-(marker.rad - angle)**2/((2*noise_angle)**2)) # pose.rad -
             
             
@@ -75,8 +82,12 @@ class ParticleFilter(object):
         pos = np.average(self.particles[:, :2], weights=weights, axis=0)
         orientation = np.average(self.particles[:, 2], weights=weights)
 
-        return self.grid.transform_xy(pos[0], pos[1]), orientation
-        # return (pos[0], pos[1]), orientation
+        # visualization option
+        if visualize:
+            self.visualize_particles(poses)
+
+        # return self.grid.transform_xy(pos[0], pos[1]), orientation
+        return (pos[0], pos[1]), orientation
 
 
     # https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/12-Particle-Filters.ipynb
@@ -105,33 +116,72 @@ class ParticleFilter(object):
         weights.resize(len(self.particles))
         weights.fill(1.0/self.n)
 
+
+    def visualize_particles(self, poses: list[Position]):
+        plt.clf()  # Clear the figure for the next frame
+        plt.scatter(self.particles[:, 0], self.particles[:, 1], s=10, c='blue', label="Particles")
+        
+        # Plot the markers
+        for pose in poses:
+            if pose is not None:
+                # show know markers in red and unknow in black
+                if pose.id < 5:
+                    # label just ensure that we don't see 4 markers in legend, but just one unique "marker" that represent all of them
+                    plt.plot(pose.x, pose.y, 'ro', markersize=8, label="Marker" if 'Marker' not in plt.gca().get_legend_handles_labels()[1] else "")
+                else:
+                    plt.plot(pose.x, pose.y, 'ko', markersize=8, label="Unknown Marker" if 'Unknown Marker' not in plt.gca().get_legend_handles_labels()[1] else "")
+        global index
+        plt.plot(index, index, 'c*', markersize=16, label="Robot pos")
+        # plt.xlim(0, 20)
+        # plt.ylim(0, 20)
+        plt.xlabel("X position")
+        plt.ylabel("Y position")
+        plt.legend()
+        plt.draw()
+        plt.pause(0.1)  # Pause briefly to allow animation effect
+
+    # global index used for plotting our location(green dot) remove this at some point af testing
+    index = 1
     def run_pf(self):
-        n = 19
-        marker = [[1, 20],
-            [10, 20],
-            [20, 10],
-            [10, 0],
-            [0, 10]
-        ]
+        n = 20
+        marker = [[10, 20, 1], [20, 10, 2], [10, 0, 3], [0, 10, 4]]
+        # we only know the dist and angle to these markers, 
+        # but use in testing x and y for calculation of dist & angle
+        unknown_marker = [[6, 8, 5], [15, 19, 6]] 
+        guess = (n//2, n//2)
+
         for i in range(1, n):      
-            #
-            dist = np.sqrt(1**2+ 1**2) # 45 cm
+            global index
+            index = i
+            diag = 1
+            dist = np.sqrt(diag**2 + diag**2) # 45 cm
             theta = np.pi/4 # 45 deg
             marker_poses = []
+
             for mark in marker:
-                dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
+                marker_dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
                 marker_theta = np.arctan2(mark[1]-i, mark[0]-i) 
-                # marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
-                # marker_theta = marker_theta - theta
-                temp = Position(dist, marker_theta)
+                marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
+                temp = Position(marker_dist, marker_theta, mark[2])
                 temp.x = mark[0]
                 temp.y = mark[1]
                 marker_poses.append(temp)
+
+
+            for mark in unknown_marker:
+                marker_dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
+                marker_theta = np.arctan2(mark[1]-i, mark[0]-i) 
+                marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
+                # marker_theta = marker_theta - theta
+                temp = Position(marker_dist, marker_theta, mark[2])
+                temp.x = temp.x + guess[0] + np.cos(theta)*dist # from origin to x + guess pos.x + current direction * delta
+                temp.y = temp.y + guess[1] + np.sin(theta)*dist
+                # print(f"({temp.x}, {temp.y}) - ({guess[0]}, {guess[1]}) & {marker_dist}")
+                marker_poses.append(temp)
                 
-                
-                # print(marker_theta, marker_theta*180/np.pi)
-        
-            cell, orientation = self.update((dist, theta), marker_poses)
+
+            cell, orientation = self.update((dist, theta), marker_poses, True)
+            guess = cell
             print(cell, orientation*180/np.pi)
 
     
@@ -146,9 +196,8 @@ def main():
     # observered postition from particles to markers
 
 
-    pf = ParticleFilter(1000, grid)
+    pf = ParticleFilter(100000, grid)
     pf.run_pf()
-
-main()
+if __name__ == "__main__":
+    main()
         
-

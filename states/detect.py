@@ -59,7 +59,8 @@ class Detect(State):
             self.dist_coeffs
         )
 
-        first, last
+        global first
+        global last 
         for i, (rvec, tvec, id) in enumerate(zip(rvecs, tvecs, ids)):
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
             if not all(m.id != id for m in robot.grid.markers):

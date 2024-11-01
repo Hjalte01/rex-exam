@@ -27,7 +27,7 @@ class ExamRobot(Waitable, Robot):
         self.driver = Driver(self, cycle)
         self.grid = Grid((0, 0), zone_size, zones, landmark_size)
         self.cam = Camera(img_size, fps, Camera.Strategy.PI_CAMERA_REQ)
-        self.heading = 0
+        self.heading = 0.0
         self.cam_matrix = None
         self.dist_coeffs = None
         self.log_file = open(

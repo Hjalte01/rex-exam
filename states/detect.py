@@ -89,9 +89,10 @@ class Detect(State):
             robot.log_file.write("[LOG] {0} - Detect complete.".format(self))
             self.fire(DetectEvent(DetectEvent.COMPLETE))
             return
+        
         if self.current and self.last:
             robot.heading = ((self.current - self.last)/2)%(2*np.pi)
-        else:
+        elif self.current:
             robot.heading += self.current
         
         robot.go_diff(40, 40, 1, 0)

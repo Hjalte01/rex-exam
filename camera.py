@@ -16,7 +16,7 @@ class Camera(object):
     class Strategy:
         PI_CAMERA       = 0
         PI_CAMERA_REQ   = 1
-        PI_CAMERA_VPN   = 2
+        PI_CAMERA_VNC   = 2
         GSTREAM         = 3
         TEST            = 4
 
@@ -44,7 +44,7 @@ class Camera(object):
                 )
                 self.__cam.configure(self.config)
                 self.__cam.start(show_preview=False)
-        elif strategy == Camera.Strategy.PI_CAMERA_VPN:
+        elif strategy == Camera.Strategy.PI_CAMERA_VNC:
                 self.__cam = picamera2.Picamera2()
                 self.config = self.__cam.create_still_configuration({
                     "size": img_size, 
@@ -57,8 +57,9 @@ class Camera(object):
                     buffer_count=1,
                     queue=False
                 )
+
                 self.__cam.configure(self.config)
-                self.__cam.start(show_preview=True)
+                self.__cam.start_preview(picamera2.Preview.QT)
         elif strategy == Camera.Strategy.GSTREAM:
             # GStream configuration here.
             pass
@@ -76,11 +77,10 @@ class Camera(object):
         except:
             pass
 
-
     def capture(self):
         if self.strategy == Camera.Strategy.PI_CAMERA:
             return self.__cam.capture_array("main")
-        elif self.strategy == Camera.Strategy.PI_CAMERA_REQ:
+        elif self.strategy == Camera.Strategy.PI_CAMERA_REQ or Camera.Strategy.PI_CAMERA_VNC:
             return self.__task.get()
         elif self.strategy == Camera.Strategy.GSTREAM:
             # GStream capture here.

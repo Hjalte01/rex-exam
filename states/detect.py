@@ -74,7 +74,6 @@ class Detect(State):
 
         for i, (rvec, tvec, id) in enumerate(zip(rvecs, tvecs, ids)):
             # robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))
-            print("[LOG] {0} - Detected marker {1}.".format(self, id))
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
 
             orientation = rvec_to_rmatrix(rvec)
@@ -90,6 +89,7 @@ class Detect(State):
             if all(m.id != id for m in robot.grid.markers):
                 robot.grid.update(robot.grid.origo, Position(delta, theta), id)
                 print(robot.grid.markers)   
+                print("[LOG] {0} - Detected marker {1}.".format(self, id))
 
 
         if self.first and self.last:

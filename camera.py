@@ -48,7 +48,7 @@ class Camera(object):
                 )
 
                 self.__cam.configure(self.config)
-                self.__cam.start_preview(picamera2.Preview.QT)
+                self.__cam.start_preview(picamera2.Preview.QTGL)
         elif strategy == Camera.Strategy.GSTREAM:
             # GStream configuration here.
             pass

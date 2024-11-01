@@ -96,7 +96,7 @@ class Detect(State):
             robot.heading = ((self.first - self.last)/2)%(2*np.pi)
         elif self.first:
             robot.heading += self.first
-        print(self.count)
+        print(f"count: {self.count}, first: {self.first}, last: {self.last}, heading: {robot.heading}")
         
         self.count += robot.heading
         if self.count >= 2*np.pi:

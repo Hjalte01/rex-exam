@@ -1,5 +1,6 @@
 from typing import List, Tuple
-from pathplaning.grid import Position
+# from pathplaning.grid import Position
+from grid import Position
 import numpy as np
 
 def create_particles_uniform(n: int, xy_max: float, theta_max: float):
@@ -86,7 +87,13 @@ def main():
     for _ in range(10):
         robot += (1.0, 1.0)
         zs = np.linalg.norm(markers - robot, axis=1), np.arctan2(markers[:, 1] - robot[1], markers[:, 0] - robot[0])
-        (x, y), heading, ((var_x, var_y), var_heading) = particle_filter_update(u, particles, zs, markers)
+        zs_pos = []
+        print(zs)
+        for (dist, theta) in zs:
+            zs_pos(Position(dist, theta))
+
+
+        (x, y), heading, ((var_x, var_y), var_heading) = particle_filter_update(u, particles, zs_pos)
         # robot = np.array([x, y]) # This is tempting, but xy is a guess and not the true position.
 
 if __name__ == "__main__":

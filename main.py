@@ -9,7 +9,7 @@ from states.detect import Detect, DetectEvent
 from states.drive import Drive, DriveEvent
 from tasks.estimate import Estimate
 
-PI_ENV              = True
+PI_ENV              = False
 
 # Driver settings
 CYCLE               = CYCLE     # 50ms

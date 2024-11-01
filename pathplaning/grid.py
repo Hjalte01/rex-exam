@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List, Tuple
 
-MARKER_SIZE = 110
+MARKER_SIZE = 320
 DELTA = 30
 
 class Position(object):

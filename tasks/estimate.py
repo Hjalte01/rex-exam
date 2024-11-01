@@ -4,6 +4,7 @@ import cv2
 from cv2 import aruco
 from pathplaning.grid import Position
 from pathplaning.sir import particle_filter_update, create_particles_uniform
+from pathplaning.localization import ParticleFilter
 from statedriver import Task
 from examrobot import ExamRobot
 
@@ -32,7 +33,7 @@ class Estimate(Task):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.control = initial_control
-        self.particles = create_particles_uniform(5000, 9, 2*np.pi)
+        self.particles = 5000
 
     def run(self, robot: ExamRobot):
         frame = robot.cam.capture()
@@ -63,7 +64,8 @@ class Estimate(Task):
                 first = theta
 
         x1, y1 = robot.grid.origo.cx, robot.grid.origo.cy
-        (x, y), heading = particle_filter_update(self.control, self.particles, poses)
+        pf = ParticleFilter(self.particles, robot.grid)
+        (x, y), heading = pf.update(self.control, poses)
         robot.grid.update(robot.grid.transform_xy(x, y))
         robot.heading = heading
 

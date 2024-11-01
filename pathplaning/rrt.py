@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from  pathplaning.grid import Grid, Cell
+from pathplaning.grid import Grid, Cell
 
 class Node(object):
     def __init__(self, cell: Cell, link: "Node" = None) -> None:

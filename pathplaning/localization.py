@@ -1,4 +1,6 @@
-from pathplaning.grid import Position, Grid
+
+# from pathplaning.grid import Position, Grid
+from grid import Position, Grid
 import numpy as np
 from numpy import random as rnd
 import matplotlib.pyplot as plt
@@ -13,9 +15,8 @@ class ParticleFilter(object):
         self.n = n
         self.grid = grid
         self.particles = np.ndarray((self.n, 3))
-
-        self.particles[:, 0] = rnd.uniform(0, 20, self.n)
-        self.particles[:, 1] = rnd.uniform(0, 20, self.n)
+        self.particles[:, 0] = rnd.uniform(0, len(grid) * grid.zone_size, self.n)
+        self.particles[:, 1] = rnd.uniform(0, len(grid) * grid.zone_size, self.n)
         self.particles[:, 2] = rnd.uniform(0, 2 * np.pi, self.n)
         self.weights = np.array((self.n))
         self.weights.fill(1/self.n)
@@ -85,8 +86,8 @@ class ParticleFilter(object):
         # visualization option
         if visualize:
             self.visualize_particles(poses)
-
         # return self.grid.transform_xy(pos[0], pos[1]), orientation
+        print(pos[0], pos[1])
         return (pos[0], pos[1]), orientation
 
 
@@ -138,22 +139,25 @@ class ParticleFilter(object):
         plt.ylabel("Y position")
         plt.legend()
         plt.draw()
-        plt.pause(0.1)  # Pause briefly to allow animation effect
+        plt.pause(0.5)  # Pause briefly to allow animation effect
+
+
+
 
     # global index used for plotting our location(green dot) remove this at some point af testing
     index = 1
     def run_pf(self):
-        n = 20
-        marker = [[10, 20, 1], [20, 10, 2], [10, 0, 3], [0, 10, 4]]
+        n = 9 * 450
+        marker = [[n//2, n, 1], [n, n//2, 2], [n//2, 0, 3], [0, n//2, 4]]
         # we only know the dist and angle to these markers, 
         # but use in testing x and y for calculation of dist & angle
-        unknown_marker = [[6, 8, 5], [15, 19, 6]] 
-        guess = (n//2, n//2)
+        unknown_marker = [[n//4, n//1.3, 5], [n//1.2, n//3, 6]] 
+        origo_xy = (0, 0)
 
-        for i in range(1, n):      
+        for i in range(450//2, n, 450):      
             global index
             index = i
-            diag = 1
+            diag = 450
             dist = np.sqrt(diag**2 + diag**2) # 45 cm
             theta = np.pi/4 # 45 deg
             marker_poses = []
@@ -174,21 +178,22 @@ class ParticleFilter(object):
                 marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
                 # marker_theta = marker_theta - theta
                 temp = Position(marker_dist, marker_theta, mark[2])
-                temp.x = temp.x + guess[0] + np.cos(theta)*dist # from origin to x + guess pos.x + current direction * delta
-                temp.y = temp.y + guess[1] + np.sin(theta)*dist
+                temp.x = temp.x + origo_xy[0] + np.cos(theta)*dist # from origin to x + guess pos.x + current direction * delta
+                temp.y = temp.y + origo_xy[1] + np.sin(theta)*dist
                 # print(f"({temp.x}, {temp.y}) - ({guess[0]}, {guess[1]}) & {marker_dist}")
                 marker_poses.append(temp)
                 
-
-            cell, orientation = self.update((dist, theta), marker_poses, True)
-            guess = cell
-            print(cell, orientation*180/np.pi)
-
+            origo_xy, orientation = self.update((dist, theta), marker_poses, True)
+            
+            # guess = (cell.zone.col * cell.zone.size + cell.col * cell.size, 
+            #          cell.zone.row * cell.zone.size + cell.row * cell.size)
+            # print(f"""grid[{cell.zone.col}, {cell.zone.row}][{cell.col}, {cell.row}] = ({guess[0]}, {guess[1]})\n zone_size: {cell.zone.size}, cell_size: {cell.size}\n""")
+            print(origo_xy)
     
 
 def main():
 
-    grid = Grid((6, 1), 450)
+    grid = Grid((0, 0), 450)
     grid.create_marker(grid[0, 0].diffuse(), grid[0, 0][0, 0], 1)
     grid.create_marker(grid[0, 8].diffuse(), grid[0, 8][0, 0], 2)
     grid.create_marker(grid[8, 0].diffuse(), grid[8, 0][0, 0], 3)

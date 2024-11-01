@@ -57,8 +57,10 @@ class Estimate(Task):
             poses.append(Position(delta, theta))
 
             if i + 1 == len(ids):
-                last = theta
+                global last 
+                last= theta
             elif not i:
+                global first
                 first = theta
 
         x1, y1 = robot.grid.origo.cx, robot.grid.origo.cy

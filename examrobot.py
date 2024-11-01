@@ -38,6 +38,8 @@ class ExamRobot(Waitable, Robot):
         )
         self.__done = False
 
+
+
     def __del__(self):
         Robot.__del__(self)
         self.cam.stop()

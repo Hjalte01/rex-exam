@@ -59,7 +59,7 @@ class Detect(State):
         #     frame
         # )
         
-        corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
+        corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
         if ids is None:
             robot.go_diff(40, 40, 1, 0)
             sleep(0.2)

@@ -63,7 +63,7 @@ class Detect(State):
 
         for i, (rvec, tvec, id) in enumerate(zip(rvecs, tvecs, ids)):
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
-            if any(m.id != id for m in robot.grid.markers):
+            if any(m.id == id for m in robot.grid.markers):
                 continue
 
             # robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))

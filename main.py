@@ -21,7 +21,7 @@ LANDMARK_SIZE       = LANDMARK_SIZE # 200mm - The size of a landmark (box with m
 ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
-MARKER_SIZE         = 140.50     # mm - The size of a marker on a landmark. Rally marker == 145
+MARKER_SIZE         = 176.69     # mm - The size of a marker on a landmark. Rally marker == 145
 BOARD_MARKER_SIZE   = 61.78     # mm - The size of a marker on a board.
 BOARD_SHAPE         = (3, 3)    # m x n
 BOARD_GAP           = 1.84      # mm
@@ -109,8 +109,8 @@ def main():
                 config["dist_coeffs"]
             )
 
-            print("Delta: {0:>11.3f}mm".format(tvec_to_euclidean(tvecs[0])))
-            (pitch, yaw, roll) = rvec_to_rmatrix(rvecs[0])
+            print("Delta: {0:>11.3f}mm".format(tvec_to_euclidean(tvecs[0][0])))
+            (pitch, yaw, roll) = rvec_to_rmatrix(rvecs[0][0])
             print(
                 "Pitch: {0:>11.3f}deg\nYaw: {1:>11.3f}deg\nRoll: {2:>11.3f}".format(
                     np.rad2deg(pitch),

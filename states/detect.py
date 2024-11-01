@@ -52,7 +52,7 @@ class Detect(State):
         
         if ids is None:
             robot.go_diff(40, 40, 0, 1)
-            sleep(0.2)
+            sleep(0.1)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -69,13 +69,13 @@ class Detect(State):
 
             # robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))
             print("[LOG] {0} - Detected marker {1}.".format(self, id))
-            print(robot.grid.markers)
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
 
             orientation = rvec_to_rmatrix(rvec)
             theta = (robot.heading + orientation[1])%(2*np.pi)
             delta = tvec_to_euclidean(tvec)
             robot.grid.update(robot.grid.origo, Position(delta, theta), id)
+            print(robot.grid.markers)
 
             if i + 1 == len(ids):
                 self.last = theta
@@ -96,7 +96,7 @@ class Detect(State):
             return
         
         robot.go_diff(40, 40, 0, 1)
-        sleep(0.2)
+        sleep(0.1)
 
         self.first = None
         self.last = None

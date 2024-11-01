@@ -11,7 +11,7 @@ from pathplaning.grid import Grid
 # Driver settings
 CYCLE           = 50 # ms
 # Camera settings
-IMG_SIZE        = (1920, 1080)
+IMG_SIZE        = (3280, 2464)
 FPS             = 30
 # Grid settings
 LANDMARK_SIZE   = 350 # mm

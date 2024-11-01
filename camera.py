@@ -16,8 +16,9 @@ class Camera(object):
     class Strategy:
         PI_CAMERA       = 0
         PI_CAMERA_REQ   = 1
-        GSTREAM         = 2
-        TEST            = 3
+        PI_CAMERA_VPN   = 2
+        GSTREAM         = 3
+        TEST            = 4
 
     def __init__(self, img_size: Tuple[int, int], fps: int, strategy: int):
         super(Camera, self).__init__()
@@ -43,6 +44,21 @@ class Camera(object):
                 )
                 self.__cam.configure(self.config)
                 self.__cam.start(show_preview=False)
+        elif strategy == Camera.Strategy.PI_CAMERA_VPN:
+                self.__cam = picamera2.Picamera2()
+                self.config = self.__cam.create_still_configuration({
+                    "size": img_size, 
+                    "format": "RGB888",
+                    },
+                    sensor={
+                        "output_size": img_size,
+                        "bit_depth": 12,
+                    },
+                    buffer_count=1,
+                    queue=False
+                )
+                self.__cam.configure(self.config)
+                self.__cam.start(show_preview=True)
         elif strategy == Camera.Strategy.GSTREAM:
             # GStream configuration here.
             pass

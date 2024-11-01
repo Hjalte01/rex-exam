@@ -52,7 +52,6 @@ class Marker(Cell):
     def __init__(self, size: int, centroid: Cell, id: int):
         super(Marker, self).__init__(size, centroid.row, centroid.col, centroid.zone, 0)
         self.__centroid__ = centroid
-        # self.delta = delta
         self.id = id
 
     @property
@@ -178,7 +177,7 @@ class Grid(object):
                 nearest = o
         return nearest
     
-    def update(self, origo: Cell, pose: Position=None):
+    def update(self, origo: Cell, pose: Position=None, id=0):
         self.origo = origo
 
         if pose is None:
@@ -187,9 +186,9 @@ class Grid(object):
         cell = self.transform_pose(pose)
         if cell.zone.free:
             if cell.free:
-                self.create_marker(cell.zone.diffuse(), self.transform_pose(pose))
+                self.create_marker(cell.zone.diffuse(), self.transform_pose(pose), id)
         elif cell.free:
-            self.create_marker(cell.zone, cell)
+            self.create_marker(cell.zone, cell, id)
 
     def random_cell(self):
         row, col = np.random.randint(0, len(self)), np.random.randint(0, len(self))

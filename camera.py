@@ -57,8 +57,10 @@ class Camera(object):
                     buffer_count=1,
                     queue=False
                 )
+
+                
                 self.__cam.configure(self.config)
-                self.__cam.start(show_preview=True)
+                self.__cam.start_preview(picamera2.Preview.QT)
         elif strategy == Camera.Strategy.GSTREAM:
             # GStream configuration here.
             pass
@@ -75,7 +77,6 @@ class Camera(object):
             self.__cam.close()
         except:
             pass
-
 
     def capture(self):
         if self.strategy == Camera.Strategy.PI_CAMERA:

@@ -48,7 +48,8 @@ class Estimate(Task):
             self.dist_coeffs
         )
 
-        global first, last
+        global first
+        global last 
         poses = []
         for i, (rvec, tvec) in enumerate(zip(rvecs, tvecs)):
             orientation = rvec_to_rmatrix(rvec)

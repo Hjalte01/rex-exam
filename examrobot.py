@@ -14,7 +14,7 @@ CYCLE           = 50 # ms
 IMG_SIZE        = (3280, 2464)
 FPS             = 30
 # Grid settings
-LANDMARK_SIZE   = 350 # mm
+LANDMARK_SIZE   = 320 # mm
 ZONE_SIZE       = 450 # mm
 ZONES           = 9
 

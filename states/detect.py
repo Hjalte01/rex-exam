@@ -52,7 +52,7 @@ class Detect(State):
         frame = robot.cam.capture()
         cv2.imwrite(
             path.abspath(
-                "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+                "./imgs/detect-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
             ),
             frame
         )

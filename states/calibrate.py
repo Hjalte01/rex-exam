@@ -46,10 +46,13 @@ class Calibrate(State):
         self.ids = np.append(self.ids, ids, axis=0)
         self.counts = np.append(self.counts, [len(ids)])
 
+        robot.log_file.write(
+            "[LOG] {0} - Pass {1} of {2} complete. Detected {3} markers."
+            .format(self, self.max - self.passes, self.max, len(ids))
+        )
         self.passes -= 1
+        self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE))
         if self.passes > 0:
-            self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE))
-            robot.log_file.write("[LOG] {0} - Pass {1} of {2} complete. Detected {3} markers.".format(self, self.max - self.passes, self.max, len(ids)))
             return
         
         _, cam_matrix, dist_coeffs, _, _ = aruco.calibrateCameraAruco(
@@ -61,12 +64,10 @@ class Calibrate(State):
             None,
             None
         )
-
-        self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE))            
+         
+        robot.log_file.write("[LOG] {0} - Calibrate complete.".format(self))
         self.fire(CalibrateEvent(
             CalibrateEvent.COMPLETE, 
             cam_matrix=cam_matrix, 
             dist_coeffs=dist_coeffs
         ))
-        robot.log_file.write("[LOG] {0} - Pass {1} of {2} complete. Detected {3} markers.".format(self, self.max - self.passes, self.max, len(ids)))
-        robot.log_file.write("[LOG] {0} - Calibrate complete.".format(self))

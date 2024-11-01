@@ -69,12 +69,13 @@ class Drive(State):
             self.target = self.path.pop()
             return
         else:
+            robot.stop()
             robot.log_file.write("[LOG] {0} - Visited goal {1}.".format(self, self.target))
-            robot.go_diff(0, 0, 1, 1)
             self.moving = False
             self.fire(DriveEvent(DriveEvent.GOAL_VISITED, self.target))
         
         if not len(self.ids) and not len(self.path):
+            robot.stop()
             robot.log_file.write("[LOG] {0} - Visited all goals.".format(self))
-            robot.go_diff(0, 0, 1, 1)
             self.fire(DriveEvent(DriveEvent.COMPLETE))
+            self.done(True)

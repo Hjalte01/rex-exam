@@ -52,7 +52,7 @@ class Detect(State):
         
         if ids is None:
             robot.go_diff(40, 40, 0, 1)
-            # sleep(1)
+            sleep(0.2)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -96,7 +96,7 @@ class Detect(State):
             return
         
         robot.go_diff(40, 40, 0, 1)
-        # sleep(1)
+        sleep(0.2)
 
         self.first = None
         self.last = None

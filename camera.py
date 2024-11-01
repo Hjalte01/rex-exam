@@ -16,8 +16,9 @@ class Camera(object):
     class Strategy:
         PI_CAMERA       = 0
         PI_CAMERA_REQ   = 1
-        GSTREAM         = 2
-        TEST            = 3
+        PI_CAMERA_VNC   = 2
+        GSTREAM         = 3
+        TEST            = 4
 
     def __init__(self, img_size: Tuple[int, int], fps: int, strategy: int):
         super(Camera, self).__init__()
@@ -27,24 +28,45 @@ class Camera(object):
         if strategy == Camera.Strategy.PI_CAMERA \
             or strategy == Camera.Strategy.PI_CAMERA_REQ:
                 self.__cam = picamera2.Picamera2()
-                self.config = self.__cam.create_video_configuration({
+                self.config = self.__cam.create_still_configuration({
                     "size": img_size, 
-                    "format": "RGB888"
+                    "format": "RGB888",
                     },
-                    controls={
-                        "FrameDurationLimits": (int(1/fps * 1000000), int(1/fps * 1000000)),
+                    sensor={
+                        "output_size": img_size,
+                        "bit_depth": 12,
                     },
+                    buffer_count=1,
+                    # controls={
+                    #     "FrameDurationLimits": (int(1/fps * 1000000), int(1/fps * 1000000)),
+                    # },
                     queue=False
                 )
                 self.__cam.configure(self.config)
                 self.__cam.start(show_preview=False)
+        elif strategy == Camera.Strategy.PI_CAMERA_VNC:
+                self.__cam = picamera2.Picamera2()
+                self.config = self.__cam.create_still_configuration({
+                    "size": img_size, 
+                    "format": "RGB888",
+                    },
+                    sensor={
+                        "output_size": img_size,
+                        "bit_depth": 12,
+                    },
+                    buffer_count=1,
+                    queue=False
+                )
+
+                self.__cam.configure(self.config)
+                self.__cam.start_preview(picamera2.Preview.QT)
         elif strategy == Camera.Strategy.GSTREAM:
             # GStream configuration here.
             pass
         else:
             self.__cam = cv2.VideoCapture(0)
 
-        self.__task__ = CaptureTask(self.__cam)
+        self.__task = CaptureTask(self.__cam)
     
     def stop(self):
         """
@@ -55,12 +77,11 @@ class Camera(object):
         except:
             pass
 
-
     def capture(self):
         if self.strategy == Camera.Strategy.PI_CAMERA:
             return self.__cam.capture_array("main")
-        elif self.strategy == Camera.Strategy.PI_CAMERA_REQ:
-            return self.__task__.get()
+        elif self.strategy == Camera.Strategy.PI_CAMERA_REQ or Camera.Strategy.PI_CAMERA_VNC:
+            return self.__task.get()
         elif self.strategy == Camera.Strategy.GSTREAM:
             # GStream capture here.
             # Make sure libcamera is installed: gst-inspect-1.0 libcamerasrc
@@ -70,7 +91,6 @@ class Camera(object):
         else:
             _, frame = self.__cam.read()
             return frame
-        
 
 class CaptureTask(Task):
     def __init__(self, cam):
@@ -79,9 +99,9 @@ class CaptureTask(Task):
         self.__frame = None
 
     def __signal__(self, task):
-        req = self.__frame.wait(task)
+        req = self.__cam.wait(task)
         self.__frame = req.make_array("main")
-        self.wake()
+        # self.wake()
         req.release()
 
     def run(self):
@@ -91,5 +111,5 @@ class CaptureTask(Task):
     def get(self):
         with self:
             self.run()
-            self.wait()
+            # self.wait()
             return self.__frame

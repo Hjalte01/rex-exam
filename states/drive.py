@@ -47,11 +47,12 @@ class Drive(State):
         theta = np.arctan2(dy, dx)
         offset = np.pi*2*0.05
 
-        if robot.heading - offset < theta:
+
+        if theta - offset < robot.heading:
             robot.go_diff(40, 40, 0, 1)
             robot.log_file.write("[LOG] {0} - Rotating left to {1} with heading {2}.".format(self, theta, robot.heading))
             return
-        elif robot.heading + offset > theta:
+        elif theta + offset > robot.heading:
             robot.go_diff(40, 40, 1, 0)
             robot.log_file.write("[LOG] {0} - Rotating right to {1} with heading {2}.".format(self, theta, robot.heading))
             return
@@ -60,7 +61,7 @@ class Drive(State):
             robot.log_file.write("[LOG] {0} - Driving to {1}.".format(self, self.target))
 
 
-        if np.sqrt(dx*2 + dy**2) >= self.perimeter:
+        if np.sqrt(dx**2 + dy**2) >= self.perimeter:
             return
 
         if len(self.path):
@@ -69,12 +70,13 @@ class Drive(State):
             self.target = self.path.pop()
             return
         else:
+            robot.stop()
             robot.log_file.write("[LOG] {0} - Visited goal {1}.".format(self, self.target))
-            robot.go_diff(0, 0, 1, 1)
             self.moving = False
             self.fire(DriveEvent(DriveEvent.GOAL_VISITED, self.target))
         
         if not len(self.ids) and not len(self.path):
+            robot.stop()
             robot.log_file.write("[LOG] {0} - Visited all goals.".format(self))
-            robot.go_diff(0, 0, 1, 1)
             self.fire(DriveEvent(DriveEvent.COMPLETE))
+            self.done(True)

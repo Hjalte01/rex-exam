@@ -14,7 +14,7 @@ CYCLE           = 50 # ms
 IMG_SIZE        = (1920, 1080)
 FPS             = 30
 # Grid settings
-LANDMARK_SIZE   = 200 # mm
+LANDMARK_SIZE   = 350 # mm
 ZONE_SIZE       = 450 # mm
 ZONES           = 9
 
@@ -26,7 +26,7 @@ class ExamRobot(Waitable, Robot):
         Robot.__init__(self, port)
         self.driver = Driver(self, cycle)
         self.grid = Grid((0, 0), zone_size, zones, landmark_size)
-        self.cam = Camera(img_size, fps, Camera.Strategy.PI_CAMERA)
+        self.cam = Camera(img_size, fps, Camera.Strategy.PI_CAMERA_VNC)
         self.heading = 0
         self.cam_matrix = None
         self.dist_coeffs = None

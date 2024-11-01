@@ -65,11 +65,11 @@ class Detect(State):
             if not all(m.id != id for m in robot.grid.markers):
                 continue
 
-            self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
             robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))
+            self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
 
             orientation = rvec_to_rmatrix(rvec)
-            theta = (robot.heading + orientation[1])%2*np.pi
+            theta = (robot.heading + orientation[1])%(2*np.pi)
             delta = tvec_to_euclidean(tvec)
             robot.grid.update(robot.grid.origo, Position(delta, theta), id)
 
@@ -79,15 +79,16 @@ class Detect(State):
                 first = theta
 
             if self.first is None:
-                self.first = theta
-            elif theta >= self.first:
-                self.fire(DetectEvent(DetectEvent.COMPLETE))
-                robot.log_file.write("[LOG] {0} - Detect complete.".format(self))
+                self.first = (id, theta)
+            elif id == self.first[0] and theta < self.first[1]:
                 self.done(True)
 
         if self.done():
+            robot.stop()
+            robot.log_file.write("[LOG] {0} - Detect complete.".format(self))
+            self.fire(DetectEvent(DetectEvent.COMPLETE))
             return
             
-        robot.heading = ((first - last)/2)%2*np.pi
+        robot.heading = ((first - last)/2)%(2*np.pi)
         robot.go_diff(40, 40, 1, 0)
             

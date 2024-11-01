@@ -12,7 +12,7 @@ from tasks.estimate import Estimate
 PI_ENV              = True
 
 # Driver settings
-CYCLE               = CYCLE # 50ms
+CYCLE               = CYCLE     # 50ms
 # Camera settings
 IMG_SIZE            = IMG_SIZE  # (1920, 1080)
 FPS                 = FPS       # 30
@@ -21,7 +21,7 @@ LANDMARK_SIZE       = LANDMARK_SIZE # 200mm - The size of a landmark (box with m
 ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
-MARKER_SIZE         = 92.12     # mm - The size of a marker on a landmark.
+MARKER_SIZE         = 92.12     # mm - The size of a marker on a landmark. Rally marker == 145
 BOARD_MARKER_SIZE   = 61.78     # mm - The size of a marker on a board.
 BOARD_SHAPE         = (3, 3)    # m x n
 BOARD_GAP           = 1.84      # mm
@@ -29,21 +29,21 @@ ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
 PASSES              = 12
 
-def handle_calibrate_pass_complete(event: CalibrateEvent):
-    event.origin.wait()
+def handle_calibrate_pass_complete(e: CalibrateEvent):
+    e.origin.wait()
 
-def handle_calibrate_complete(event: CalibrateEvent):
+def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
         path.abspath("./configs/calibrateion.npz"),
-        cam_matrix=event.cam_matrix,
-        dist_coeffs=event.dist_coeffs
+        cam_matrix=e.cam_matrix,
+        dist_coeffs=e.dist_coeffs
     )
 
-def handle_detect_complete(event: DetectEvent):
-    event.robot.switch(Drive.ID)
+def handle_detect_complete(e: DetectEvent):
+    e.robot.switch(Drive.ID)
 
-def handle_drive_complete(event: DriveEvent):
-    event.robot.done(True)
+def handle_drive_complete(e: DriveEvent):
+    e.robot.done(True)
 
 def main():
     robot = None
@@ -78,14 +78,6 @@ def main():
                 if c == 'q':
                     break
 
-                frame = robot.capture()
-                cv2.imwrite(
-                    path.abspath(
-                        "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
-                    ),
-                    frame
-                )
-
                 if not started:
                     robot.start()
                     started = True
@@ -93,7 +85,6 @@ def main():
                     robot.wake()
 
                 robot.wait_for(CalibrateEvent.PASS_COMPLETE)
-            robot.stop()
         elif c == 'p':
             frame = robot.capture()
             cv2.imwrite(
@@ -138,7 +129,14 @@ def main():
 
             while not robot.done():
                 robot.wait_for(DriveEvent.GOAL_VISITED)
-            robot.stop()
+        elif c == 't':
+            config = np.load(path.abspath("./configs/calibration.npz"))
+            robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
+            robot.register(DetectEvent.COMPLETE, lambda e: e.robot.done(True))
+            robot.start()
+
+            while not robot.done():
+                robot.wait_for(DetectEvent.COMPLETE)
         elif c == 's':
             robot.stop()
         elif c == 'q':

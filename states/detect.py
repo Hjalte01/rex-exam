@@ -73,10 +73,6 @@ class Detect(State):
         )
 
         for i, (rvec, tvec, id) in enumerate(zip(rvecs, tvecs, ids)):
-            # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
-            if any(m.id == id for m in robot.grid.markers):
-                continue
-
             # robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))
             print("[LOG] {0} - Detected marker {1}.".format(self, id))
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
@@ -84,14 +80,18 @@ class Detect(State):
             orientation = rvec_to_rmatrix(rvec)
             theta = (robot.heading + orientation[1])%(2*np.pi)
             delta = tvec_to_euclidean(tvec)
-            robot.grid.update(robot.grid.origo, Position(delta, theta), id)
-            print(robot.grid.markers)
 
             if i + 1 == len(ids):
                 self.last = theta
             elif not i:
                 self.first = theta
-        
+
+            # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
+            if all(m.id != id for m in robot.grid.markers):
+                robot.grid.update(robot.grid.origo, Position(delta, theta), id)
+                print(robot.grid.markers)   
+
+
         if self.first and self.last:
             robot.heading = ((self.first - self.last)/2)%(2*np.pi)
         elif self.first:

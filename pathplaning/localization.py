@@ -1,6 +1,6 @@
 
-# from pathplaning.grid import Position, Grid
-from grid import Position, Grid
+from pathplaning.grid import Position, Grid
+# from grid import Position, Grid
 import numpy as np
 from numpy import random as rnd
 import matplotlib.pyplot as plt

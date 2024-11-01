@@ -3,7 +3,6 @@ import numpy as np
 import cv2
 from cv2 import aruco
 from pathplaning.grid import Position
-from pathplaning.sir import particle_filter_update, create_particles_uniform
 from pathplaning.localization import ParticleFilter
 from statedriver import Task
 from examrobot import ExamRobot

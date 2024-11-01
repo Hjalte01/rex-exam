@@ -1,6 +1,6 @@
 from typing import List, Tuple
-# from pathplaning.grid import Position
-from grid import Position
+from pathplaning.grid import Position
+# from grid import Position
 import numpy as np
 
 def create_particles_uniform(n: int, xy_max: float, theta_max: float):

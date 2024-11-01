@@ -1,3 +1,5 @@
+from datetime import datetime
+from os import path
 import cv2
 import numpy as np
 from cv2 import aruco
@@ -48,11 +50,17 @@ class Detect(State):
         robot.stop()
         sleep(0.1)
         frame = robot.cam.capture()
+        cv2.imwrite(
+            path.abspath(
+                "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+            ),
+            frame
+        )
+
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
-        
         if ids is None:
             robot.go_diff(40, 40, 0, 1)
-            sleep(0.1)
+            sleep(0.01)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -96,7 +104,7 @@ class Detect(State):
             return
         
         robot.go_diff(40, 40, 0, 1)
-        sleep(0.1)
+        sleep(0.01)
 
         self.first = None
         self.last = None

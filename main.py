@@ -78,14 +78,6 @@ def main():
                 if c == 'q':
                     break
 
-                frame = robot.capture()
-                cv2.imwrite(
-                    path.abspath(
-                        "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
-                    ),
-                    frame
-                )
-
                 if not started:
                     robot.start()
                     started = True

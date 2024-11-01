@@ -48,14 +48,17 @@ class Detect(State):
     
     def run(self, robot: ExamRobot):
         robot.stop()
-        sleep(0.1)
+        sleep(0.2)
+        print("a")
         frame = robot.cam.capture()
+        print("b")
         cv2.imwrite(
             path.abspath(
                 "./imgs/detect-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
             ),
             frame
         )
+        print("c")
 
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
         if ids is None:

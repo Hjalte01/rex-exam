@@ -40,8 +40,8 @@ class Detect(State):
         self.marker_size = marker_size
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
+        self.count = 0
         self.first = None
-        self.current = None
         self.last = None
     
     def run(self, robot: ExamRobot):
@@ -63,7 +63,7 @@ class Detect(State):
 
         for i, (rvec, tvec, id) in enumerate(zip(rvecs, tvecs, ids)):
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
-            if not all(m.id != id for m in robot.grid.markers):
+            if any(m.id != id for m in robot.grid.markers):
                 continue
 
             # robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))
@@ -78,25 +78,22 @@ class Detect(State):
             if i + 1 == len(ids):
                 self.last = theta
             elif not i:
-                self.current = theta
-
-            if self.first is None:
-                self.first = (id, theta)
-            elif id == self.first[0] and theta < self.first[1]:
-                self.done(True)
-
-        if self.done():
-            robot.stop()
+                self.first = theta
+        
+        if self.first and self.last:
+            robot.heading = ((self.first - self.last)/2)%(2*np.pi)
+        elif self.first:
+            robot.heading += self.first
+        
+        self.count += robot.heading
+        if self.count >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
+            robot.stop()
+            self.done(True)
             self.fire(DetectEvent(DetectEvent.COMPLETE))
             return
         
-        if self.current and self.last:
-            robot.heading = ((self.current - self.last)/2)%(2*np.pi)
-        elif self.current:
-            robot.heading += self.current
-        
         robot.go_diff(80, 80, 0, 1)
-        self.current = None
+        self.first = None
         self.last = None
             

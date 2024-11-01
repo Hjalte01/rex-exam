@@ -58,8 +58,7 @@ class Detect(State):
             ),
             frame
         )
-        print("c")
-
+        
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
         if ids is None:
             robot.go_diff(40, 40, 0, 1)

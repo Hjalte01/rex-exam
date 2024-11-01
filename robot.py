@@ -78,7 +78,7 @@ class Robot(object):
            power = 0 or 30 < power <= 127.
            
            This does NOT use wheel encoders."""
-        
+        powerLeft = powerLeft * self.left_motor_diff
         if (not self._power_checker(powerLeft)) or (not self._power_checker(powerRight)):
             print("WARNING: Read the docstring of Robot.go_diff()!")
             return ""

@@ -91,7 +91,7 @@ class CaptureTask(Task):
     def __signal__(self, task):
         req = self.__cam.wait(task)
         self.__frame = req.make_array("main")
-        # self.wake()
+        self.wake()
         req.release()
 
     def run(self):
@@ -101,5 +101,5 @@ class CaptureTask(Task):
     def get(self):
         with self:
             self.run()
-            # self.wait()
+            self.wait()
             return self.__frame

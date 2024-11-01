@@ -37,18 +37,19 @@ class Camera(object):
                 )
                 self.__cam.configure(self.config)
                 self.__cam.start(show_preview=False)
-        elif strategy == Camera.Strategy.PI_CAMERA_VNC:
-                self.__cam = picamera2.Picamera2()
-                self.config = self.__cam.create_still_configuration({
-                    "size": img_size, 
-                    "format": "RGB888",
-                    },
-                    buffer_count=1,
-                    queue=False
-                )
+                print(self.__cam2.camera_properties['PixelArraySize'])
+        # elif strategy == Camera.Strategy.PI_CAMERA_VNC:
+        #         self.__cam = picamera2.Picamera2()
+        #         self.config = self.__cam.create_still_configuration({
+        #             "size": img_size, 
+        #             "format": "RGB888",
+        #             },
+        #             buffer_count=1,
+        #             queue=False
+        #         )
 
-                self.__cam.configure(self.config)
-                self.__cam.start_preview(picamera2.Preview.QTGL)
+        #         self.__cam.configure(self.config)
+        #         self.__cam.start_preview(picamera2.Preview.QTGL)
         elif strategy == Camera.Strategy.GSTREAM:
             # GStream configuration here.
             pass

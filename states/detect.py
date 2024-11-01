@@ -61,7 +61,7 @@ class Detect(State):
         
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
         if ids is None:
-            robot.go_diff(40, 40, 0, 1)
+            robot.go_diff(40, 40, 1, 0)
             sleep(0.2)
             return
         
@@ -106,7 +106,7 @@ class Detect(State):
             self.fire(DetectEvent(DetectEvent.COMPLETE))
             return
         
-        robot.go_diff(40, 40, 0, 1)
+        robot.go_diff(40, 40, 1, 0)
         sleep(0.2)
 
         self.first = None

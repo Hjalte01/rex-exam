@@ -51,7 +51,7 @@ class Detect(State):
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
         
         if ids is None:
-            robot.go_diff(40, 40, 1, 0)
+            robot.go_diff(80, 80, 0, 1)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -66,7 +66,8 @@ class Detect(State):
             if not all(m.id != id for m in robot.grid.markers):
                 continue
 
-            robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))
+            # robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))
+            print("[LOG] {0} - Detected marker {1}.".format(self, id))
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
 
             orientation = rvec_to_rmatrix(rvec)
@@ -86,7 +87,7 @@ class Detect(State):
 
         if self.done():
             robot.stop()
-            robot.log_file.write("[LOG] {0} - Detect complete.".format(self))
+            print("[LOG] {0} - Detect complete.".format(self))
             self.fire(DetectEvent(DetectEvent.COMPLETE))
             return
         
@@ -95,7 +96,7 @@ class Detect(State):
         elif self.current:
             robot.heading += self.current
         
-        robot.go_diff(40, 40, 1, 0)
+        robot.go_diff(80, 80, 0, 1)
         self.current = None
         self.last = None
             

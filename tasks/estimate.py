@@ -64,6 +64,7 @@ class Estimate(Task):
         x1, y1 = robot.grid.origo.cx, robot.grid.origo.cy
         (x, y), heading = particle_filter_update(self.control, self.particles, poses)
         robot.grid.update(robot.grid.transform_xy(x, y))
+        robot.heading = heading
 
         x2, y2 = robot.grid.origo.cx, robot.grid.origo.cy
         delta = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)

@@ -52,12 +52,12 @@ class Detect(State):
         print("a")
         frame = robot.cam.capture()
         print("b")
-        cv2.imwrite(
-            path.abspath(
-                "./imgs/detect-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
-            ),
-            frame
-        )
+        # cv2.imwrite(
+        #     path.abspath(
+        #         "./imgs/detect-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+        #     ),
+        #     frame
+        # )
         
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
         if ids is None:

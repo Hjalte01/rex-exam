@@ -52,6 +52,7 @@ class Detect(State):
         
         if ids is None:
             robot.go_diff(80, 80, 0, 1)
+            sleep(1)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -68,6 +69,7 @@ class Detect(State):
 
             # robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))
             print("[LOG] {0} - Detected marker {1}.".format(self, id))
+            print(robot.grid.markers)
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
 
             orientation = rvec_to_rmatrix(rvec)
@@ -94,6 +96,8 @@ class Detect(State):
             return
         
         robot.go_diff(80, 80, 0, 1)
+        sleep(1)
+
         self.first = None
         self.last = None
             

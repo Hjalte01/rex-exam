@@ -137,6 +137,7 @@ def main():
 
             while not robot.done():
                 robot.wait_for(DetectEvent.COMPLETE)
+            robot.driver.stop()
         elif c == 's':
             robot.stop()
         elif c == 'q':

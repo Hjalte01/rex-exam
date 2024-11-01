@@ -52,17 +52,16 @@ class Detect(State):
         print("a")
         frame = robot.cam.capture()
         print("b")
-        cv2.imwrite(
-            path.abspath(
-                "./imgs/detect-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
-            ),
-            frame
-        )
-        print("c")
-
+        # cv2.imwrite(
+        #     path.abspath(
+        #         "./imgs/detect-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+        #     ),
+        #     frame
+        # )
+        
         corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
         if ids is None:
-            robot.go_diff(40, 40, 0, 1)
+            robot.go_diff(40, 40, 1, 0)
             sleep(0.2)
             return
         
@@ -74,29 +73,30 @@ class Detect(State):
         )
 
         for i, (rvec, tvec, id) in enumerate(zip(rvecs, tvecs, ids)):
-            # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
-            if any(m.id == id for m in robot.grid.markers):
-                continue
-
             # robot.log_file.write("[LOG] {0} - Detected marker {1}.".format(self, id))
-            print("[LOG] {0} - Detected marker {1}.".format(self, id))
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
 
             orientation = rvec_to_rmatrix(rvec)
             theta = (robot.heading + orientation[1])%(2*np.pi)
             delta = tvec_to_euclidean(tvec)
-            robot.grid.update(robot.grid.origo, Position(delta, theta), id)
-            print(robot.grid.markers)
 
             if i + 1 == len(ids):
                 self.last = theta
             elif not i:
                 self.first = theta
-        
+
+            # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
+            if all(m.id != id for m in robot.grid.markers):
+                robot.grid.update(robot.grid.origo, Position(delta, theta), id)
+                print(robot.grid.markers)   
+                print("[LOG] {0} - Detected marker {1}.".format(self, id))
+
+
         if self.first and self.last:
             robot.heading = ((self.first - self.last)/2)%(2*np.pi)
         elif self.first:
             robot.heading += self.first
+        print(f"count: {self.count}, first: {self.first}, last: {self.last}, heading: {robot.heading}")
         
         self.count += robot.heading
         if self.count >= 2*np.pi:
@@ -106,7 +106,7 @@ class Detect(State):
             self.fire(DetectEvent(DetectEvent.COMPLETE))
             return
         
-        robot.go_diff(40, 40, 0, 1)
+        robot.go_diff(40, 40, 1, 0)
         sleep(0.2)
 
         self.first = None

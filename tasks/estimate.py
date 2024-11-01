@@ -2,7 +2,7 @@ from typing import Tuple
 import numpy as np
 import cv2
 from cv2 import aruco
-from pathplaning.grid import Position
+from pathplaning.grid import Position, Grid
 from pathplaning.localization import ParticleFilter
 from statedriver import Task
 from examrobot import ExamRobot
@@ -25,7 +25,7 @@ def rvec_to_rmatrix(v):
     return [x, y, z]
 
 class Estimate(Task):
-    def __init__(self, aruco_dict, marker_size, cam_matrix, dist_coeffs, initial_control: Tuple[float, float]):
+    def __init__(self, aruco_dict, marker_size, cam_matrix, dist_coeffs, initial_control: Tuple[float, float], grid: Grid):
         super().__init__()
         self.aruco_dict = aruco_dict
         self.marker_size = marker_size
@@ -33,6 +33,9 @@ class Estimate(Task):
         self.dist_coeffs = dist_coeffs
         self.control = initial_control
         self.particles = 5000
+        self.pf = ParticleFilter(self.particles, grid)
+        self.first = None
+        self.last = None
 
     def run(self, robot: ExamRobot):
         frame = robot.cam.capture()
@@ -48,8 +51,6 @@ class Estimate(Task):
             self.dist_coeffs
         )
 
-        global first
-        global last 
         poses = []
         for i, (rvec, tvec) in enumerate(zip(rvecs, tvecs)):
             orientation = rvec_to_rmatrix(rvec)
@@ -58,13 +59,12 @@ class Estimate(Task):
             poses.append(Position(delta, theta))
 
             if i + 1 == len(ids):
-                last = theta
+                self.last = theta
             elif not i:
-                first = theta
+                self.first = theta
 
         x1, y1 = robot.grid.origo.cx, robot.grid.origo.cy
-        pf = ParticleFilter(self.particles, robot.grid)
-        (x, y), heading = pf.update(self.control, poses)
+        (x, y), heading = self.pf.update(self.control, poses)
         robot.grid.update(robot.grid.transform_xy(x, y))
         robot.heading = heading
 

@@ -151,6 +151,7 @@ class Grid(object):
         delta = np.sqrt(2*(size/2)**2)
         centroid = self.transform_xy(cell.cx + delta*np.cos(theta), cell.cy + delta*np.sin(theta))
         m = Marker(offset*2, centroid, id)
+        self.markers.append(m)
 
         for ky in range(-offset, offset, zone.cell_size):
             for kx in range(-offset, offset, zone.cell_size):
@@ -162,8 +163,6 @@ class Grid(object):
                 cell = self.transform_xy(dx, dy)
                 if cell.zone.free:
                     cell.zone.diffuse().free = 0
-                    cell.zone.markers.append(m)
-                    self.markers.append(m)
                     cell = self.transform_xy(dx, dy)
                 cell.free = 0
 

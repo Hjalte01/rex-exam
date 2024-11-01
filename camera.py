@@ -37,7 +37,7 @@ class Camera(object):
                 )
                 self.__cam.configure(self.config)
                 self.__cam.start(show_preview=False)
-                print(self.__cam2.camera_properties['PixelArraySize'])
+                print(self.__cam.camera_properties['PixelArraySize'])
         # elif strategy == Camera.Strategy.PI_CAMERA_VNC:
         #         self.__cam = picamera2.Picamera2()
         #         self.config = self.__cam.create_still_configuration({

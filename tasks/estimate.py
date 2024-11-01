@@ -48,7 +48,7 @@ class Estimate(Task):
             self.dist_coeffs
         )
 
-        first, last
+        global first, last
         poses = []
         for i, (rvec, tvec) in enumerate(zip(rvecs, tvecs)):
             orientation = rvec_to_rmatrix(rvec)
@@ -57,10 +57,8 @@ class Estimate(Task):
             poses.append(Position(delta, theta))
 
             if i + 1 == len(ids):
-                global last 
-                last= theta
+                last = theta
             elif not i:
-                global first
                 first = theta
 
         x1, y1 = robot.grid.origo.cx, robot.grid.origo.cy

@@ -59,6 +59,7 @@ class Detect(State):
             self.dist_coeffs
         )
 
+        global first, last
         for i, (rvec, tvec, id) in enumerate(zip(rvecs, tvecs, ids)):
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
             if not all(m.id != id for m in robot.grid.markers):
@@ -87,7 +88,10 @@ class Detect(State):
             robot.log_file.write("[LOG] {0} - Detect complete.".format(self))
             self.fire(DetectEvent(DetectEvent.COMPLETE))
             return
-            
-        robot.heading = ((first - last)/2)%(2*np.pi)
+        if first and last:
+            robot.heading = ((first - last)/2)%(2*np.pi)
+        else:
+            robot.heading += first
+        
         robot.go_diff(40, 40, 1, 0)
             

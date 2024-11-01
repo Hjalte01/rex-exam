@@ -52,7 +52,7 @@ class Detect(State):
             robot.go_diff(40, 40, 1, 0)
             return
         
-        rvecs, tvecs = aruco.estimatePoseSingleMarkers(
+        rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
             corners, 
             self.marker_size, 
             self.cam_matrix,

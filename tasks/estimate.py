@@ -41,7 +41,7 @@ class Estimate(Task):
         if ids is None or len(ids) < 2: # Python might not shortcircuit
             return
         
-        rvecs, tvecs = aruco.estimatePoseSingleMarkers(
+        rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
             corners, 
             self.marker_size*0.001, 
             self.cam_matrix,

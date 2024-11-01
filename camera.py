@@ -32,14 +32,7 @@ class Camera(object):
                     "size": img_size, 
                     "format": "RGB888",
                     },
-                    sensor={
-                        "output_size": img_size,
-                        "bit_depth": 12,
-                    },
                     buffer_count=1,
-                    # controls={
-                    #     "FrameDurationLimits": (int(1/fps * 1000000), int(1/fps * 1000000)),
-                    # },
                     queue=False
                 )
                 self.__cam.configure(self.config)
@@ -49,10 +42,6 @@ class Camera(object):
                 self.config = self.__cam.create_still_configuration({
                     "size": img_size, 
                     "format": "RGB888",
-                    },
-                    sensor={
-                        "output_size": img_size,
-                        "bit_depth": 12,
                     },
                     buffer_count=1,
                     queue=False

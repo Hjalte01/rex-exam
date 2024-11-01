@@ -43,6 +43,7 @@ class ExamRobot(Waitable, Robot):
     def __del__(self):
         Robot.__del__(self)
         self.cam.stop()
+        self.driver.stop()
         self.log_file.close()
     
     def capture(self):
@@ -78,7 +79,6 @@ class ExamRobot(Waitable, Robot):
 
     def stop(self):
         Robot.stop(self)
-        self.driver.stop()
   
 def mock():
     class ExamRobot(Waitable):

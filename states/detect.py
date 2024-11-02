@@ -93,7 +93,7 @@ class Detect(State):
         print(f"heading: {np.rad2deg(robot.heading)}")
         print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
 
-        if self.count*self.cycle_theta >= np.pi:
+        if self.count*self.cycle_theta >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
             robot.stop()
             self.done(True)

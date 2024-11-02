@@ -43,8 +43,10 @@ class Detect(State):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.count = 0
-        self.first = None
-        self.last = None
+        self.cycle = 0.0
+        self.first_theta = None
+        self.last_theta = None
+        self.first_id = None
     
     def run(self, robot: ExamRobot):
         robot.stop()
@@ -68,7 +70,6 @@ class Detect(State):
         for i, (rvec, tvec, id) in enumerate(zip(rvecs, tvecs, ids)):
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
 
-
             orientation = rvec_to_rmatrix(rvec)
             theta = (robot.heading + orientation[1])%(2*np.pi)
             delta = tvec_to_euclidean(tvec)
@@ -77,32 +78,31 @@ class Detect(State):
                 continue
             visited.add(id[0])
 
-            if i + 1 == len(ids):
-                self.last = theta
-            elif not i:
-                self.first = theta
-
+            if self.first_id is None:
+                self.first_id = id[0]
+                self.first_theta = theta
+            elif self.first_id != id[0]:
+                self.cycle = (theta - self.first_theta)/self.count
+                print(self.cycle)
+            
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
             if all(m.id != id[0] for m in robot.grid.markers):
                 robot.grid.update(robot.grid.origo, Position(delta, theta), id[0])
                 print(len(robot.grid.markers)) 
                 print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
-        if self.first and self.last:
-            robot.heading = ((self.first - self.last)/2)%(2*np.pi)
-        elif self.first:
-            robot.heading += self.first
+        if self.first_theta and self.last:
+            robot.heading = ((self.first_theta - self.last)/2)%(2*np.pi)
+        elif self.first_theta:
+            robot.heading += self.first_theta
             
-        self.count += robot.heading
+        self.count += 1
         print(f"count: {np.rad2deg(self.count)}, heading: {np.rad2deg(robot.heading)}")
-        if self.first and self.last:
-            print(f'first: {np.rad2deg(self.first)}, last: {np.rad2deg(self.last)}')
-        elif self.first:
-            print(f'first: {np.rad2deg(self.first)}, last: {(self.last)}')
-        elif self.last:
-            print(f'first: {(self.first)}, last: {np.rad2deg(self.last)}')
+        if self.first_theta and self.last:
+            print(f'first: {np.rad2deg(self.first_theta)}, last: {np.rad2deg(self.last)}')
 
-        if self.count >= 2*np.pi:
+        print(self.cycle*self.count)
+        if self.count*self.cycle >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
             robot.stop()
             self.done(True)
@@ -112,6 +112,6 @@ class Detect(State):
         robot.go_diff(40, 40, 1, 0)
         sleep(0.1)
 
-        self.first = None
+        self.first_theta = None
         self.last = None
             

@@ -76,7 +76,7 @@ class Detect(State):
                 continue
 
             orientation = rvec_to_rmatrix(rvec)
-            theta = (robot.heading + orientation[1])%(2*np.pi)
+            theta = (robot.heading + orientation[1])
             delta = tvec_to_euclidean(tvec)
 
             
@@ -85,13 +85,13 @@ class Detect(State):
                 self.first_id = id[0]
                 self.first_theta = theta
             elif self.first_id != id[0]:
-                self.cycle_theta = (theta - self.first_theta)/self.count
+                self.cycle_theta = ((theta - self.first_theta))/self.count
                 print(f"{theta} - {self.first_theta} = {self.cycle_theta}")
                 print("orientation = ", orientation[1])
             
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
             if all(m.id != id[0] for m in robot.grid.markers):
-                robot.grid.update(robot.grid.origo, Position(delta, theta), id[0])
+                robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
                 print(len(robot.grid.markers)) 
                 print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 

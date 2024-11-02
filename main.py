@@ -22,19 +22,19 @@ ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
 MARKER_SIZE         = 92.12     # mm - The size of a marker on a landmark. Rally marker == 145
-BOARD_MARKER_SIZE   = 36.85     # mm - The size of a marker on a board.
-BOARD_SHAPE         = (3, 3)    # m x n
-BOARD_GAP           = 26.77      # mm
+BOARD_MARKER_SIZE   = 42.37     # mm - The size of a marker on a board.
+BOARD_SHAPE         = (4, 4)    # m x n
+BOARD_GAP           = 5.34 #26.77      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
-PASSES              = 5
+PASSES              = 14
 
 def handle_calibrate_pass_complete(e: CalibrateEvent):
     e.origin.wait()
 
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
-        path.abspath("./configs/calibrateion.npz"),
+        path.abspath("./configs/calibration.npz"),
         cam_matrix=e.cam_matrix,
         dist_coeffs=e.dist_coeffs
     )

@@ -28,10 +28,10 @@ class Camera(object):
         if strategy == Camera.Strategy.PI_CAMERA \
             or strategy == Camera.Strategy.PI_CAMERA_REQ:
                 self.__cam = picamera2.Picamera2()
-                self.config = self.__cam.create_still_configuration({
-                    "size": img_size, 
+                self.config = self.__cam.create_video_configuration({ "size": img_size, 
                     "format": "RGB888",
                     },
+                    controls={"ScalerCrop":[img_size[0]//2, 0, img_size[0], img_size[1]]},
                     buffer_count=1,
                     queue=False
                 )

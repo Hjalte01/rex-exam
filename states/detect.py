@@ -49,9 +49,7 @@ class Detect(State):
     def run(self, robot: ExamRobot):
         robot.stop()
         sleep(0.2)
-        print("a")
         frame = robot.cam.capture()
-        print("b")
         # cv2.imwrite(
         #     path.abspath(
         #         "./imgs/detect-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
@@ -62,7 +60,7 @@ class Detect(State):
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
         if ids is None:
             robot.go_diff(40, 40, 1, 0)
-            sleep(0.2)
+            sleep(0.1)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -96,9 +94,12 @@ class Detect(State):
             robot.heading = ((self.first - self.last)/2)%(2*np.pi)
         elif self.first:
             robot.heading += self.first
-        print(f"count: {self.count}, first: {self.first}, last: {self.last}, heading: {robot.heading}")
-        
+            
         self.count += robot.heading
+        print(f"count: {np.rad2deg(self.count)}, heading: {np.rad2deg(robot.heading)}")
+        if self.first and self.last:
+            print(f'first: {np.rad2deg(self.first)}, last: {np.rad2deg(self.last)}')
+        
         if self.count >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
             robot.stop()
@@ -107,7 +108,7 @@ class Detect(State):
             return
         
         robot.go_diff(40, 40, 1, 0)
-        sleep(0.2)
+        sleep(0.1)
 
         self.first = None
         self.last = None

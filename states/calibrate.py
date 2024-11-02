@@ -31,7 +31,7 @@ class Calibrate(State):
 
     def run(self, robot: ExamRobot):
         frame = robot.cam.capture()   
-        corners, ids, _ = aruco.detectMarkers(frame, self.aruco_dict)
+        corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
 
         if ids is None:
             robot.log_file.write("[LOG] {0} - Detected 0 markers.".format(self))

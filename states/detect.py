@@ -97,7 +97,8 @@ class Detect(State):
             
         self.count += robot.heading
         print(f"count: {np.rad2deg(self.count)}, heading: {np.rad2deg(robot.heading)}")
-        print(f'first: {np.rad2deg(self.first)}, last: {np.rad2deg(self.last)}')
+        if self.first and self.last:
+            print(f'first: {np.rad2deg(self.first)}, last: {np.rad2deg(self.last)}')
         
         if self.count >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))

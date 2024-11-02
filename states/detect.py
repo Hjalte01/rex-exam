@@ -78,12 +78,12 @@ class Detect(State):
                 continue
             visited.add(id[0])
 
+            if self.first_theta and self.first_id != id[0]:
+                self.cycle = (theta - self.first_theta)/self.count
+                print(self.cycle)
             if self.first_id is None:
                 self.first_id = id[0]
                 self.first_theta = theta
-            elif self.first_theta and self.first_id != id[0]:
-                self.cycle = (theta - self.first_theta)/self.count
-                print(self.cycle)
             
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
             if all(m.id != id[0] for m in robot.grid.markers):
@@ -103,7 +103,7 @@ class Detect(State):
         else:
             print("First is None?")
 
-        print(self.cycle*self.count)
+        print("result:", self.cycle*self.count)
         if self.count*self.cycle >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
             robot.stop()

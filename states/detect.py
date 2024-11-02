@@ -86,6 +86,7 @@ class Detect(State):
                 self.first_theta = theta
             elif self.first_id != id[0]:
                 self.cycle_theta = (theta - self.first_theta)/self.count
+                print(f"{theta} - {self.first_theta} = {self.cycle_theta}")
             
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
             if all(m.id != id[0] for m in robot.grid.markers):

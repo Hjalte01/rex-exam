@@ -91,15 +91,17 @@ class Detect(State):
                 print(len(robot.grid.markers)) 
                 print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
-        if self.first_theta and self.last:
-            robot.heading = ((self.first_theta - self.last)/2)%(2*np.pi)
-        elif self.first_theta:
+        # if self.first_theta and self.last:
+        #     robot.heading = ((self.first_theta - self.last)/2)%(2*np.pi)
+        if self.first_theta:
             robot.heading += self.first_theta
             
         self.count += 1
         print(f"count: {np.rad2deg(self.count)}, heading: {np.rad2deg(robot.heading)}")
-        if self.first_theta and self.last:
-            print(f'first: {np.rad2deg(self.first_theta)}, last: {np.rad2deg(self.last)}')
+        if self.first_theta:
+            print(f'first: {np.rad2deg(self.first_theta)}')
+        else:
+            print("First is None?")
 
         print(self.cycle*self.count)
         if self.count*self.cycle >= 2*np.pi:
@@ -113,5 +115,4 @@ class Detect(State):
         sleep(0.1)
 
         self.first_theta = None
-        self.last = None
             

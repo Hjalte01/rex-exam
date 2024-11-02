@@ -34,7 +34,7 @@ def handle_calibrate_pass_complete(e: CalibrateEvent):
 
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
-        path.abspath("./configs/calibrateion.npz"),
+        path.abspath("./configs/calibration.npz"),
         cam_matrix=e.cam_matrix,
         dist_coeffs=e.dist_coeffs
     )

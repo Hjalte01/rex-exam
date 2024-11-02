@@ -20,7 +20,7 @@ class Camera(object):
         GSTREAM         = 3
         TEST            = 4
 
-    def __init__(self, img_size: Tuple[int, int], fps: int, strategy: int):
+    def __init__(self, img_size: Tuple[int, int], fps: int, strategy: int, control: dict):
         super(Camera, self).__init__()
 
         self.strategy = strategy
@@ -32,6 +32,7 @@ class Camera(object):
                     "size": img_size, 
                     "format": "RGB888",
                     },
+                    control={"ScalerCrop":[0, 0, 1920, 1080]},
                     buffer_count=1,
                     queue=False
                 )

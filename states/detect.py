@@ -43,9 +43,8 @@ class Detect(State):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.count = 0
-        self.cycle = 0.0
-        self.first_theta = None
-        self.last_theta = None
+        self.cycle_theta = 0.0
+        self.first_theta = 0.0
         self.first_id = None
     
     def run(self, robot: ExamRobot):
@@ -66,24 +65,21 @@ class Detect(State):
             self.dist_coeffs
         )
 
-        visited = set()
-        for i, (rvec, tvec, id) in enumerate(zip(rvecs, tvecs, ids)):
+        for (rvec, tvec, id) in zip(rvecs, tvecs, ids):
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
+
+            if any(m.id == id[0] for m in robot.grid.markers):
+                continue
 
             orientation = rvec_to_rmatrix(rvec)
             theta = (robot.heading + orientation[1])%(2*np.pi)
             delta = tvec_to_euclidean(tvec)
 
-            if id[0] in visited:
-                continue
-            visited.add(id[0])
-
             if self.first_id is None:
                 self.first_id = id[0]
                 self.first_theta = theta
             elif self.first_id != id[0]:
-                self.cycle = (theta - self.first_theta)/self.count
-                print(self.cycle)
+                self.cycle_theta = (theta - self.first_theta)/self.count
             
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
             if all(m.id != id[0] for m in robot.grid.markers):
@@ -91,27 +87,20 @@ class Detect(State):
                 print(len(robot.grid.markers)) 
                 print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
-        if self.first_theta and self.last:
-            robot.heading = ((self.first_theta - self.last)/2)%(2*np.pi)
-        elif self.first_theta:
-            robot.heading += self.first_theta
-            
         self.count += 1
-        print(f"count: {np.rad2deg(self.count)}, heading: {np.rad2deg(robot.heading)}")
-        if self.first_theta and self.last:
-            print(f'first: {np.rad2deg(self.first_theta)}, last: {np.rad2deg(self.last)}')
+        robot.heading = self.count*self.cycle_theta
+            
+        print(f"heading: {np.rad2deg(robot.heading)}")
+        print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
 
-        print(self.cycle*self.count)
-        if self.count*self.cycle >= 2*np.pi:
+        if self.count*self.cycle_theta >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
             robot.stop()
             self.done(True)
             self.fire(DetectEvent(DetectEvent.COMPLETE))
+            print(", ".join([m for m in robot.grid.markers]))
             return
         
         robot.go_diff(40, 40, 1, 0)
         sleep(0.1)
-
-        self.first_theta = None
-        self.last = None
             

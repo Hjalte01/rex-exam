@@ -73,9 +73,9 @@ class Detect(State):
             theta = (robot.heading + orientation[1])%(2*np.pi)
             delta = tvec_to_euclidean(tvec)
 
-            if id in visited:
+            if id[0] in visited:
                 continue
-            set.add(id)
+            visited.add(id[0])
 
             if i + 1 == len(ids):
                 self.last = theta
@@ -84,9 +84,9 @@ class Detect(State):
 
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
             if all(m.id != id for m in robot.grid.markers):
-                robot.grid.update(robot.grid.origo, Position(delta, theta), id)
+                robot.grid.update(robot.grid.origo, Position(delta, theta), id[0])
                 print(len(robot.grid.markers)) 
-                print("[LOG] {0} - Detected marker {1}.".format(self, id))
+                print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
         if self.first and self.last:
             robot.heading = ((self.first - self.last)/2)%(2*np.pi)

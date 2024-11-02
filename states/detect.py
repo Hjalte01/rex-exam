@@ -54,8 +54,12 @@ class Detect(State):
         
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
         if ids is None:
+            self.count += 1
             robot.go_diff(40, 40, 1, 0)
-            # sleep(0.1)
+            robot.heading = self.count*self.cycle_theta
+            print(f"heading: {np.rad2deg(robot.heading)}")
+            print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
+            sleep(0.1)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -87,11 +91,6 @@ class Detect(State):
                 print(len(robot.grid.markers)) 
                 print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
-        self.count += 1
-        robot.heading = self.count*self.cycle_theta
-            
-        print(f"heading: {np.rad2deg(robot.heading)}")
-        print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
 
         if self.count*self.cycle_theta >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
@@ -101,6 +100,10 @@ class Detect(State):
             print(", ".join([m.__str__() for m in robot.grid.markers]))
             return
         
+        self.count += 1
         robot.go_diff(40, 40, 1, 0)
-        # sleep(0.1)
+        robot.heading = self.count*self.cycle_theta
+        print(f"heading: {np.rad2deg(robot.heading)}")
+        print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
+        sleep(0.1)
             

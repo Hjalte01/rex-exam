@@ -102,5 +102,5 @@ class Detect(State):
             return
         
         robot.go_diff(40, 40, 1, 0)
-        sleep(0.1)
+        # sleep(0.1)
             

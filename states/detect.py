@@ -55,8 +55,8 @@ class Detect(State):
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
         if ids is None:
             self.count += 1
-            robot.go_diff(40, 40, 1, 0)
             robot.heading = self.count*self.cycle_theta
+            robot.go_diff(40, 40, 1, 0)
             print(f"heading: {np.rad2deg(robot.heading)}")
             print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
             sleep(0.1)
@@ -79,10 +79,12 @@ class Detect(State):
             theta = (robot.heading + orientation[1])%(2*np.pi)
             delta = tvec_to_euclidean(tvec)
 
+            
+
             if self.first_id is None:
                 self.first_id = id[0]
                 self.first_theta = theta
-            elif not self.cycle_theta and self.first_id != id[0]:
+            elif self.first_id != id[0]:
                 self.cycle_theta = (theta - self.first_theta)/self.count
             
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
@@ -101,8 +103,8 @@ class Detect(State):
             return
         
         self.count += 1
-        robot.go_diff(40, 40, 1, 0)
         robot.heading = self.count*self.cycle_theta
+        robot.go_diff(40, 40, 1, 0)
         print(f"heading: {np.rad2deg(robot.heading)}")
         print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
         sleep(0.1)

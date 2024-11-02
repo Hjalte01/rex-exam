@@ -43,7 +43,7 @@ class Detect(State):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.count = 0
-        self.cycle_theta = 0.0
+        self.cycle_theta = 0
         self.first_theta = 0.0
         self.first_id = None
     
@@ -54,7 +54,11 @@ class Detect(State):
         
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
         if ids is None:
+            self.count += 1
+            robot.heading = self.count*self.cycle_theta
             robot.go_diff(40, 40, 1, 0)
+            print(f"heading: {np.rad2deg(robot.heading)}")
+            print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
             sleep(0.1)
             return
         
@@ -72,8 +76,10 @@ class Detect(State):
                 continue
 
             orientation = rvec_to_rmatrix(rvec)
-            theta = (robot.heading + orientation[1])%(2*np.pi)
+            theta = (robot.heading + orientation[1])
             delta = tvec_to_euclidean(tvec)
+
+            
 
             if self.first_id is None:
                 self.first_id = id[0]
@@ -83,24 +89,23 @@ class Detect(State):
             
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
             if all(m.id != id[0] for m in robot.grid.markers):
-                robot.grid.update(robot.grid.origo, Position(delta, theta), id[0])
+                robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
                 print(len(robot.grid.markers)) 
                 print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
-        self.count += 1
-        robot.heading = self.count*self.cycle_theta
-            
-        print(f"heading: {np.rad2deg(robot.heading)}")
-        print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
 
         if self.count*self.cycle_theta >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
             robot.stop()
             self.done(True)
             self.fire(DetectEvent(DetectEvent.COMPLETE))
-            print(", ".join([m for m in robot.grid.markers]))
+            print(", ".join([m.__str__() for m in robot.grid.markers]))
             return
         
+        self.count += 1
+        robot.heading = self.count*self.cycle_theta
         robot.go_diff(40, 40, 1, 0)
+        print(f"heading: {np.rad2deg(robot.heading)}")
+        print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
         sleep(0.1)
             

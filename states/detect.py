@@ -93,12 +93,12 @@ class Detect(State):
         print(f"heading: {np.rad2deg(robot.heading)}")
         print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
 
-        if self.count*self.cycle_theta >= 2*np.pi:
+        if self.count*self.cycle_theta >= np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
             robot.stop()
             self.done(True)
             self.fire(DetectEvent(DetectEvent.COMPLETE))
-            print(", ".join([m for m in robot.grid.markers]))
+            print(", ".join([m.__str__() for m in robot.grid.markers]))
             return
         
         robot.go_diff(40, 40, 1, 0)

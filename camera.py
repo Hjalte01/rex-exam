@@ -31,7 +31,7 @@ class Camera(object):
                 self.config = self.__cam.create_video_configuration({ "size": img_size, 
                     "format": "RGB888",
                     },
-                    controls={"ScalerCrop":[0, 0, 1920, 1080]},
+                    controls={"ScalerCrop":[1920//2, 0, 1920, 1080]},
                     buffer_count=1,
                     queue=False
                 )

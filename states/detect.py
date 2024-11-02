@@ -83,7 +83,7 @@ class Detect(State):
                 self.first = theta
 
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
-            if all(m.id != id for m in robot.grid.markers):
+            if all(m.id != id[0] for m in robot.grid.markers):
                 robot.grid.update(robot.grid.origo, Position(delta, theta), id[0])
                 print(len(robot.grid.markers)) 
                 print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))

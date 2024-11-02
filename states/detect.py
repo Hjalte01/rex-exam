@@ -81,7 +81,7 @@ class Detect(State):
             if self.first_id is None:
                 self.first_id = id[0]
                 self.first_theta = theta
-            elif self.first_theta and self.first_id != id[0]:
+            if self.first_theta and self.first_id != id[0]:
                 self.cycle = (theta - self.first_theta)/self.count
                 print(self.cycle)
             

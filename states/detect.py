@@ -83,6 +83,7 @@ class Detect(State):
                 self.first_id = id[0]
                 self.first_theta = theta
             elif self.first_id != id[0]:
+                print("theta={0}".format(theta))
                 self.cycle_theta = (theta - self.first_theta)/self.count
             
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 

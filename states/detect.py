@@ -76,10 +76,8 @@ class Detect(State):
                 continue
 
             orientation = rvec_to_rmatrix(rvec)
-            theta = (robot.heading + orientation[1])
+            theta = (2*np.pi)*np.abs((robot.heading + orientation[1])/(2*np.pi))
             delta = tvec_to_euclidean(tvec)
-
-            
 
             if self.first_id is None:
                 self.first_id = id[0]
@@ -88,11 +86,9 @@ class Detect(State):
                 self.cycle_theta = (theta - self.first_theta)/self.count
             
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
-            if all(m.id != id[0] for m in robot.grid.markers):
-                robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
-                print(len(robot.grid.markers)) 
-                print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
-
+            # if all(m.id != id[0] for m in robot.grid.markers):
+            robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
+            print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
         if self.count*self.cycle_theta >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))

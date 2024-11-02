@@ -49,15 +49,8 @@ class Detect(State):
     
     def run(self, robot: ExamRobot):
         robot.stop()
-        if self.count*self.cycle_theta >= 2*np.pi:
-            print("[LOG] {0} - Detect complete.".format(self))
-            self.done(True)
-            self.fire(DetectEvent(DetectEvent.COMPLETE))
-            print(", ".join([m.__str__() for m in robot.grid.markers]))
-            return
         sleep(0.2)
 
-        
         frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
         if ids is None:
@@ -98,11 +91,17 @@ class Detect(State):
             robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
             print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
-            self.count += 1
-            robot.heading = self.count*self.cycle_theta
-            robot.go_diff(40, 40, 1, 0)
-            print(f"heading: {np.rad2deg(robot.heading)}")
-            print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
-            sleep(0.1)
+        if self.count*self.cycle_theta >= 2*np.pi:
+            print("[LOG] {0} - Detect complete.".format(self))
+            self.done(True)
+            self.fire(DetectEvent(DetectEvent.COMPLETE))
+            print(", ".join([m.__str__() for m in robot.grid.markers]))
+            return
+        self.count += 1
+        robot.heading = self.count*self.cycle_theta
+        robot.go_diff(40, 40, 1, 0)
+        print(f"heading: {np.rad2deg(robot.heading)}")
+        print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
+        sleep(0.1)
 
             

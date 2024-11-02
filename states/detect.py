@@ -81,7 +81,7 @@ class Detect(State):
             if self.first_id is None:
                 self.first_id = id[0]
                 self.first_theta = theta
-            if self.first_theta and self.first_id != id[0]:
+            elif self.first_theta and self.first_id != id[0]:
                 self.cycle = (theta - self.first_theta)/self.count
                 print(self.cycle)
             
@@ -114,5 +114,5 @@ class Detect(State):
         robot.go_diff(40, 40, 1, 0)
         sleep(0.1)
 
-        self.first_theta = None
+        # self.first_theta = None
             

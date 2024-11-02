@@ -43,7 +43,7 @@ class Detect(State):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.count = 0
-        self.cycle_theta = 0.0
+        self.cycle_theta = 0
         self.first_theta = 0.0
         self.first_id = None
     
@@ -78,7 +78,7 @@ class Detect(State):
             if self.first_id is None:
                 self.first_id = id[0]
                 self.first_theta = theta
-            elif self.first_id != id[0] == 0.0:
+            elif not self.cycle_theta and self.first_id != id[0]:
                 self.cycle_theta = (theta - self.first_theta)/self.count
             
             # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 

@@ -21,10 +21,10 @@ LANDMARK_SIZE       = LANDMARK_SIZE # 200mm - The size of a landmark (box with m
 ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
-MARKER_SIZE         = 92.12     # mm - The size of a marker on a landmark. Rally marker == 145
+MARKER_SIZE         = 145 #92.12     # mm - The size of a marker on a landmark. Rally marker == 145
 BOARD_MARKER_SIZE   = 36.85     # mm - The size of a marker on a board.
-BOARD_SHAPE         = (3, 3)    # m x n
-BOARD_GAP           = 26.77      # mm
+BOARD_SHAPE         = (1, 1)    # m x n
+BOARD_GAP           = 10#26.77      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
 PASSES              = 14

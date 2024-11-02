@@ -20,7 +20,7 @@ class Camera(object):
         GSTREAM         = 3
         TEST            = 4
 
-    def __init__(self, img_size: Tuple[int, int], fps: int, strategy: int, control: dict):
+    def __init__(self, img_size: Tuple[int, int], fps: int, strategy: int):
         super(Camera, self).__init__()
 
         self.strategy = strategy

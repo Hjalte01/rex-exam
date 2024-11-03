@@ -107,7 +107,7 @@ def search_for_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, mark
         else:
             # Turn around
             print(arlo.go_diff(leftSpeed*turn_speed_constant, rightSpeed*turn_speed_constant, 0, 1))
-            sleep(0.01)
+            sleep(0.1)
             print(arlo.stop())
     
 

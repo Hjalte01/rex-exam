@@ -64,6 +64,7 @@ class Robot(object):
         return str_val
     
     def get_heading(self):
+        """Get the heading in degrees"""
         return self.send_command("HEAD")
 
 

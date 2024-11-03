@@ -91,7 +91,7 @@ def main():
             if ids is None:
                 continue
 
-            config = np.load(path.abspath("./configs/calibration-test.npz"))
+            config = np.load(path.abspath("./configs/calibration.npz"))
             rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
                 corners, 
                 MARKER_SIZE*0.001, 

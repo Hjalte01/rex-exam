@@ -62,11 +62,6 @@ class Robot(object):
         sleep(sleep_ms)
         str_val=self.serialRead.readline()
         return str_val
-    
-    def get_heading(self):
-        """Get the heading in degrees"""
-        return self.send_command("HEAD")
-
 
     def _power_checker(self, power):
         """Checks if a power value is in the set {0, [30;127]}.

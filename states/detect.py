@@ -46,6 +46,7 @@ class Detect(State):
         self.cycle_theta = 0
         self.first_theta = 0.0
         self.first_id = None
+        self.map = dict()
     
     def run(self, robot: ExamRobot):
         robot.stop()
@@ -70,26 +71,30 @@ class Detect(State):
         )
 
         for (rvec, tvec, id) in zip(rvecs, tvecs, ids):
-            self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
+            
+            orientation = rvec_to_rmatrix(rvec)
 
             if any(m.id == id[0] for m in robot.grid.markers):
+                self.map[id].append(orientation[1])
                 continue
+            self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
 
-            orientation = rvec_to_rmatrix(rvec)
-            theta = (2*np.pi)*np.abs((robot.heading + orientation[1])/(2*np.pi))
+            theta = robot.heading + orientation[1]
             delta = tvec_to_euclidean(tvec)
 
-            if self.first_id is None:
-                self.first_id = id[0]
-                self.first_theta = theta
-            elif self.first_id != id[0]:
-                print("theta={0}".format(theta))
-                self.cycle_theta = (theta - self.first_theta)/self.count
-            
-            # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
-            # if all(m.id != id[0] for m in robot.grid.markers):
+            self.map.setdefault(id, [orientation[1]])
+
+
             robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
             print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
+
+        for id, orientations in self.map.items():
+            if len(orientations) < 2:
+                continue
+            delta = np.abs(orientations[1] - orientations[0])
+            if delta < self.cycle_theta:
+                self.cycle_theta = delta
+
 
         if self.count*self.cycle_theta >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))

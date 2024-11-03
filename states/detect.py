@@ -60,7 +60,7 @@ class Detect(State):
             robot.go_diff(40, 40, 1, 0)
             print(f"heading: {np.rad2deg(robot.heading)}")
             print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
-            sleep(0.1)
+            sleep(0.01)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -91,6 +91,7 @@ class Detect(State):
         for _, orientations in self.map.items():
             if len(orientations) < 2:
                 continue
+            print("a")
             delta = np.abs(orientations[1] - orientations[0])
             if delta < self.cycle_theta:
                 self.cycle_theta = delta
@@ -107,6 +108,6 @@ class Detect(State):
         robot.go_diff(40, 40, 1, 0)
         print(f"heading: {np.rad2deg(robot.heading)}")
         print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
-        sleep(0.1)
+        sleep(0.01)
 
             

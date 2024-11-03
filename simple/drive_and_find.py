@@ -126,11 +126,11 @@ def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
             # Turn left correction
             if angle > 0.05:
                 arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
-                sleep(0.01)
+                sleep(0.1)
             # Right turn correction
             elif angle < -0.05:
                 arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
-                sleep(0.01)
+                sleep(0.1)
  
 
 

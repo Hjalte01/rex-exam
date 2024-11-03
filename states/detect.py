@@ -89,8 +89,8 @@ class Detect(State):
 
             theta = robot.heading + orientation[1]
             delta = tvec_to_euclidean(tvec)
-            print("delta, ", delta)
-            print(f"self.map[id[{id[0]}]] = {orientation[1]}")
+            # print("delta, ", delta)
+            # print(f"self.map[id[{id[0]}]] = {orientation[1]}")
             self.map.setdefault(id[0], [orientation[1]])
 
 
@@ -112,7 +112,12 @@ class Detect(State):
 
 
         self.count += 1
-        robot.heading = self.count*self.cycle_theta
+        if robot.grid.markers < 2:
+            # our estamate
+            robot.heading = self.count*self.cycle_theta
+        else:
+            # pf estimate
+            pass
         robot.go_diff(40, 40, 1, 0)
         # print(f"heading: {np.rad2deg(robot.heading)}")
         # print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")

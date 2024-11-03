@@ -34,18 +34,12 @@ class Calibrate(State):
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
 
         if ids is None:
-            robot.log_file.write("[LOG] {0} - Detected 0 markers.".format(self))
             return
+        self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE))
         self.corners = np.append(self.corners, corners, axis=0)
         self.ids = np.append(self.ids, ids, axis=0)
         self.counts = np.append(self.counts, [len(ids)])
-
-        robot.log_file.write(
-            "[LOG] {0} - Pass {1} of {2} complete. Detected {3} markers."
-            .format(self, self.max - self.passes, self.max, len(ids))
-        )
         self.passes -= 1
-        self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE))
         if self.passes > 0:
             return
         

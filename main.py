@@ -1,5 +1,6 @@
 from datetime import datetime
 from os import path
+from time import sleep
 import numpy as np
 import cv2
 from cv2 import aruco
@@ -27,14 +28,14 @@ BOARD_SHAPE         = (4, 4)    # m x n
 BOARD_GAP           = 5.34 #26.77      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
-PASSES              = 14
+PASSES              = 30
 
 def handle_calibrate_pass_complete(e: CalibrateEvent):
     e.origin.wait()
 
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
-        path.abspath("./configs/calibration.npz"),
+        path.abspath("./configs/calibration-test.npz"),
         cam_matrix=e.cam_matrix,
         dist_coeffs=e.dist_coeffs
     )
@@ -70,21 +71,7 @@ def main():
             robot.register(CalibrateEvent.PASS_COMPLETE, handle_calibrate_pass_complete)
 
             for i in range(PASSES):
-                c = (input(
-                        "Calibration pass {0} of {1}.\n" 
-                        "Press \"c\" to continue.\n"
-                        "Press \"q\" to stop.".format(i + 1, PASSES)) + "\n"
-                    ).lower()[0]
-                if c == 'q':
-                    break
-
-                if not started:
-                    robot.start()
-                    started = True
-                else:
-                    robot.wake()
-
-                robot.wait_for(CalibrateEvent.PASS_COMPLETE)
+                sleep(1)
         elif c == 'p':
             frame = robot.capture()
             cv2.imwrite(
@@ -101,7 +88,7 @@ def main():
             if ids is None:
                 continue
 
-            config = np.load(path.abspath("./configs/calibration.npz"))
+            config = np.load(path.abspath("./configs/calibration-test.npz"))
             rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
                 corners, 
                 MARKER_SIZE*0.001, 

@@ -72,7 +72,7 @@ class Detect(State):
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
             corners, 
-            self.marker_size, 
+            self.marker_size*0.001, 
             self.cam_matrix,
             self.dist_coeffs
         )

@@ -8,14 +8,14 @@ import sys
 import numpy as np
 from pprint import *
 
+
 import os, sys
 from time import sleep
 
 # get for the robot module from the parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import robot
-
+from ..robot import Robot
 try:
     import picamera2
     print("Camera.py: Using picamera2 module")
@@ -158,7 +158,7 @@ def drive_towards_landmark(distance, angle, arlo, leftSpeed, rightSpeed):
 
 def main():
     # initialize the robot
-    arlo = robot.Robot()
+    arlo = Robot()
 
     # sleep for 2 seconds
     sleep(2)

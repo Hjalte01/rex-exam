@@ -43,7 +43,7 @@ class Detect(State):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.count = 0
-        self.cycle_theta = 0
+        self.cycle_theta = np.inf
         self.first_theta = 0.0
         self.first_id = None
         self.map = dict()

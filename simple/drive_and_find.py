@@ -178,9 +178,13 @@ def main():
 
     for landmark in wanted_landmarks:
         # Get the distance and angle between the robot and the landmark
+        print("Searching for landmark: ", landmark)
         distance, angle = search_for_landmark(landmark, cam, img_dict, cam_matrix, coeff_vector, marker_length, arlo, leftSpeed, rightSpeed)
+        print("Distance: ", distance)
+        print("Angle: ", angle)
 
         # Drive towards the landmark
+        print("Driving towards landmark: ", landmark)
         drive_towards_landmark(landmark, distance, angle, arlo, leftSpeed, rightSpeed)
 
     cam.stop()

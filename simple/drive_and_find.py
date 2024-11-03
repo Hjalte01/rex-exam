@@ -73,10 +73,7 @@ def get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_leng
     corners, ids, _ = aruco.detectMarkers(image, img_dict)
 
     # check if the wanted marker is in the detected markers
-    if marker_id not in ids:
-        print("Marker not found")
-        return None, None
-    else:
+    if ids is not None and marker_id in ids:
         # Get the index of the wanted marker
         index = np.where(ids == marker_id)
         corners = corners[index]
@@ -89,6 +86,8 @@ def get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_leng
         angle = np.arctan2(tvecs[0][0][0], tvecs[0][0][2])
 
         return distance, angle
+    else:
+        return None, None
 
 
 def search_for_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length, arlo, leftSpeed, rightSpeed):

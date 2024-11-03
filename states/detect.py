@@ -43,7 +43,7 @@ class Detect(State):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.count = 0
-        self.cycle_theta = 100
+        self.cycle_theta = 100 # a cycle isn't 30 
         self.first_theta = 0.0
         self.first_id = None
         self.map = dict()
@@ -67,7 +67,7 @@ class Detect(State):
             robot.go_diff(40, 40, 1, 0)
             print(f"heading: {np.rad2deg(robot.heading)}")
             print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
-            sleep(0.01)
+            sleep(0.1)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -98,7 +98,6 @@ class Detect(State):
         for _, orientations in self.map.items():
             if len(orientations) < 2:
                 continue
-            print("a")
             delta = np.abs(orientations[1] - orientations[0])
             if delta < self.cycle_theta:
                 self.cycle_theta = delta
@@ -109,6 +108,6 @@ class Detect(State):
         robot.go_diff(40, 40, 1, 0)
         print(f"heading: {np.rad2deg(robot.heading)}")
         print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
-        sleep(0.01)
+        sleep(0.1)
 
             

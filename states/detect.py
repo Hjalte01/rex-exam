@@ -43,10 +43,11 @@ class Detect(State):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.count = 0
-        self.cycle_theta = 100 # a cycle isn't 30 
+        self.cycle_theta = 0.10 # a cycle isn't 30 
         self.first_theta = 0.0
         self.first_id = None
         self.map = dict()
+        
     
     def run(self, robot: ExamRobot):
         robot.stop()
@@ -82,8 +83,8 @@ class Detect(State):
             orientation = rvec_to_rmatrix(rvec)
 
             if any(m.id == id[0] for m in robot.grid.markers):
-                print(f"self.map[id[{id[0]}]] = {orientation[1]}")
-                self.map[id[0]].append(orientation[1])
+                # print(f"self.map[id[{id[0]}]] = {orientation[1]}")
+                # self.map[id[0]].append(orientation[1])
                 continue
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id[0]))
 
@@ -91,32 +92,34 @@ class Detect(State):
             delta = tvec_to_euclidean(tvec)
             # print("delta, ", delta)
             # print(f"self.map[id[{id[0]}]] = {orientation[1]}")
-            self.map.setdefault(id[0], [orientation[1]])
+            # self.map.setdefault(id[0], [orientation[1]])
 
 
             robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
             print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
-        sum_delta = 0
-        n_delta = 0
-        for _, orientations in self.map.items():
-            if len(orientations) < 2:
-                continue
-            for index in range(len(orientations)-1):
-                sum_delta += orientations[index] - orientations[index+1]
-            n_delta += len(orientation)-1
-            # if delta < self.cycle_theta:
-        if n_delta:
-            delta = sum_delta / n_delta
-            self.cycle_theta = delta
+        # sum_delta = 0
+        # n_delta = 0
+        # for _, orientations in self.map.items():
+        #     if len(orientations) < 2:
+        #         continue
+        #     for index in range(len(orientations)-1):
+        #         sum_delta += orientations[index] - orientations[index+1]
+        #     n_delta += len(orientation)-1
+        #     # if delta < self.cycle_theta:
+        # if n_delta:
+        #     delta = sum_delta / n_delta
+        #     self.cycle_theta = delta
 
 
         self.count += 1
-        if len(robot.grid.markers) < 2:
+        # if len(robot.grid.markers) < 2:
             # our estamate
-            robot.heading = self.count*self.cycle_theta
-        else:
-            # pf estimate
+        robot.heading = self.count*self.cycle_theta
+        # else:
+        #     # pf estimate
+            
+
             pass
         robot.go_diff(40, 40, 1, 0)
         # print(f"heading: {np.rad2deg(robot.heading)}")

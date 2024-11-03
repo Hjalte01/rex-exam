@@ -132,8 +132,8 @@ def main():
         elif c == 't':
             config = np.load(path.abspath("./configs/calibration.npz"))
             estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], [np.sqrt(100**2), 0], robot.grid)
-            robot.grid.create_marker(robot.grid.zones[3, 0].diffuse(), robot.grid.zones[3, 0][3, 3], 8, LANDMARK_SIZE)
-            robot.grid.create_marker(robot.grid.zones[3, 1].diffuse(), robot.grid.zones[3, 0][3, 3], 7, LANDMARK_SIZE)
+            robot.grid.create_marker(robot.grid[3, 0].diffuse(), robot.grid[3, 0][3, 3], 8, LANDMARK_SIZE)
+            robot.grid.create_marker(robot.grid[3, 1].diffuse(), robot.grid[3, 0][3, 3], 7, LANDMARK_SIZE)
             estimate.run(robot)
             # config = np.load(path.abspath("./configs/calibration.npz"))
             # robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (np.sqrt(90**2), 0), robot.grid))

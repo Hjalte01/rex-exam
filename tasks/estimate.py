@@ -52,16 +52,15 @@ class Estimate(Task):
             self.cam_matrix,
             self.dist_coeffs
         )
-        print(zip(rvecs, tvecs))
         poses = []
         for i, (rvec, tvec) in enumerate(zip(rvecs, tvecs)):
             orientation = rvec_to_rmatrix(rvec)
-            print(orientation)
-            print(rvec)
-            print(tvec)
-            theta = (robot.heading + orientation[1]) % (2 * np.pi)
+            print("orientation: ", orientation)
+            print("rvec: ", rvec)
+            print("tvec: ", tvec)
+            theta = robot.heading + orientation[1]
             delta = tvec_to_euclidean(tvec)
-            print(delta, theta)
+            print(f"delta: {delta}, theta: {theta}")
             poses.append(Position(delta, theta))
 
             if i + 1 == len(ids):

@@ -126,7 +126,7 @@ def main():
             # robot.grid.create_marker(robot.grid[3, 1].diffuse(), robot.grid[3, 0][3, 3], 7, LANDMARK_SIZE)
             # estimate.run(robot)
             config = np.load(path.abspath("./configs/calibration.npz"))
-            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (np.sqrt(90**2), 0), robot.grid))
+            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (0, np.pi/2), robot.grid))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
             # robot.add(Drive([11]))
             robot.register(DetectEvent.COMPLETE, handle_detect_complete)

@@ -132,7 +132,10 @@ def main():
         elif c == 't':
             config = np.load(path.abspath("./configs/calibration.npz"))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
+            robot.add(Drive([11]))
             robot.register(DetectEvent.COMPLETE, lambda e: e.robot.done(True))
+            robot.register(DetectEvent.COMPLETE, handle_detect_complete)
+            robot.register(DriveEvent.COMPLETE, handle_drive_complete)
             robot.start()
 
             while not robot.done():

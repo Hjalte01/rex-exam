@@ -10,7 +10,7 @@ from states.detect import Detect, DetectEvent
 from states.drive import Drive, DriveEvent
 from tasks.estimate import Estimate
 
-PI_ENV              = False
+PI_ENV              = True
 
 # Driver settings
 CYCLE               = CYCLE     # 50ms
@@ -28,11 +28,11 @@ BOARD_SHAPE         = (5, 5)    # m x n
 BOARD_GAP           = 1.85 #26.77      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
-PASSES              = 30
+PASSES              = 10
 
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
-        path.abspath("./configs/calibration-test.npz"),
+        path.abspath("./configs/calibration-test-1.npz"),
         cam_matrix=e.cam_matrix,
         dist_coeffs=e.dist_coeffs
     )
@@ -86,7 +86,7 @@ def main():
             if ids is None:
                 continue
 
-            config = np.load(path.abspath("./configs/calibration.npz"))
+            config = np.load(path.abspath("./configs/calibration-test-1.npz"))
             rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
                 corners, 
                 MARKER_SIZE*0.001, 

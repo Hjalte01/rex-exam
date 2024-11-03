@@ -10,7 +10,7 @@ from states.detect import Detect, DetectEvent
 from states.drive import Drive, DriveEvent
 from tasks.estimate import Estimate
 
-PI_ENV              = True
+PI_ENV              = False
 
 # Driver settings
 CYCLE               = CYCLE     # 50ms
@@ -30,9 +30,6 @@ ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
 PASSES              = 30
 
-def handle_calibrate_pass_complete(e: CalibrateEvent):
-    sleep(2)
-
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
         path.abspath("./configs/calibration-test.npz"),
@@ -40,7 +37,6 @@ def handle_calibrate_complete(e: CalibrateEvent):
         dist_coeffs=e.dist_coeffs
     )
     e.robot.done(True)
-    e.origin.done(True)
 
 def handle_detect_complete(e: DetectEvent):
     e.robot.switch(Drive.ID)
@@ -70,10 +66,9 @@ def main():
             started = False
             robot.add(Calibrate(PASSES, ARUCO_DICT, BOARD_MARKER_SIZE, BOARD_SHAPE, BOARD_GAP), default=True)
             robot.register(CalibrateEvent.COMPLETE, handle_calibrate_complete)
-            robot.register(CalibrateEvent.PASS_COMPLETE, handle_calibrate_pass_complete)
+            robot.start()
             
             while not robot.done():
-                robot.start()
                 robot.wait_for(CalibrateEvent.PASS_COMPLETE)
         elif c == 'p':
             frame = robot.capture()

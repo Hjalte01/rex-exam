@@ -99,8 +99,8 @@ class Detect(State):
             if len(orientations) < 2:
                 continue
             delta = orientations[0] - orientations[1]
-            if delta < self.cycle_theta:
-                self.cycle_theta = delta
+            # if delta < self.cycle_theta:
+            self.cycle_theta = delta
 
 
         self.count += 1

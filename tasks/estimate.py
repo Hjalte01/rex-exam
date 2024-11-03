@@ -55,7 +55,7 @@ class Estimate(Task):
 
         poses = []
         for i, (rvec, tvec) in enumerate(zip(rvecs, tvecs)):
-            orientation = rvec_to_rmatrix(rvec[0])
+            orientation = rvec_to_rmatrix(rvec[1])
             print(orientation)
             theta = (robot.heading + orientation[1])%2*np.pi
             delta = tvec_to_euclidean(tvec[0])

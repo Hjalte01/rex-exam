@@ -10,8 +10,6 @@ from states.detect import Detect, DetectEvent
 from states.drive import Drive, DriveEvent
 from tasks.estimate import Estimate
 
-# Simple strategy
-from simple import drive_and_find
 
 PI_ENV              = True
 
@@ -134,10 +132,6 @@ def main():
             while not robot.done():
                 robot.wait_for(DetectEvent.COMPLETE)
             robot.driver.stop()
-        elif c == 'm':
-            print("Starting drive_and_find")
-            drive_and_find.main()
-            print("Finished drive_and_find")
         elif c == 's':
             robot.stop()
         elif c == 'q':

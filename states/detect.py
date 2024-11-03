@@ -75,12 +75,14 @@ class Detect(State):
             orientation = rvec_to_rmatrix(rvec)
 
             if any(m.id == id[0] for m in robot.grid.markers):
-                self.map[id].append(orientation[1][0])
+                self.map[id].append(orientation[1])
                 continue
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
 
             theta = robot.heading + orientation[1]
             delta = tvec_to_euclidean(tvec)
+            print(orientation)
+            return
 
             self.map.setdefault(id, [orientation[1][0]])
 

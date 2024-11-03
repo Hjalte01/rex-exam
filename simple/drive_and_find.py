@@ -63,7 +63,7 @@ cam_matrix[0, 2] = principal_point[0]  # c_x
 cam_matrix[1, 2] = principal_point[1]  # c_y
 cam_matrix[2, 2] = 1.0
 
-marker_length = 0.15 # meters
+marker_length = 0.145 # meters
 
 # get the dictionary for the aruco markers
 img_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250) # As per the assignment
@@ -107,7 +107,7 @@ def search_for_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, mark
         else:
             # Turn around
             arlo.go_diff(leftSpeed*turn_speed_constant, rightSpeed*turn_speed_constant, 0, 1)
-            sleep(0.2)
+            sleep(0.1)
             arlo.stop()
     
 
@@ -126,11 +126,11 @@ def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
             # Turn left correction
             if angle > 0.05:
                 arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
-                sleep(0.1)
+                sleep(0.01)
             # Right turn correction
             elif angle < -0.05:
                 arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
-                sleep(0.1)
+                sleep(0.01)
  
 
 

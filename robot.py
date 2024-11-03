@@ -62,6 +62,9 @@ class Robot(object):
         sleep(sleep_ms)
         str_val=self.serialRead.readline()
         return str_val
+    
+    def get_heading(self):
+        return self.send_command("HEAD")
 
 
     def _power_checker(self, power):

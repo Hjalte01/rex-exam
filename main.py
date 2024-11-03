@@ -130,14 +130,21 @@ def main():
             while not robot.done():
                 robot.wait_for(DriveEvent.GOAL_VISITED)
         elif c == 't':
-            config = np.load(path.abspath("./configs/calibration.npz"))
-            robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
-            robot.register(DetectEvent.COMPLETE, lambda e: e.robot.done(True))
-            robot.start()
+            # config = np.load(path.abspath("./configs/calibration.npz"))
+            # robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
+            # robot.register(DetectEvent.COMPLETE, lambda e: e.robot.done(True))
+            # robot.start()
 
-            while not robot.done():
-                robot.wait_for(DetectEvent.COMPLETE)
-            robot.driver.stop()
+            # while not robot.done():
+            #     robot.wait_for(DetectEvent.COMPLETE)
+            # robot.driver.stop()
+            print(robot.get_heading())
+            while True:
+                c = (input() + "")[0]
+                print(robot.get_heading())
+                if c == 'q':
+                    break
+
         elif c == 's':
             robot.stop()
         elif c == 'q':

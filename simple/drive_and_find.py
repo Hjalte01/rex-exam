@@ -139,7 +139,7 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
     Drive the robot towards the landmark and keep updating the distance and angle between the robot and the landmark
     """
     # Turn correction
-    correct_angle(angle, arlo, leftSpeed, rightSpeed)
+    correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
 
     # Drive towards the landmark
     while distance > 0.45:
@@ -152,7 +152,7 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
             break
 
         # Correct the angle of the robot while driving towards the landmark
-        correct_angle(angle, arlo, leftSpeed, rightSpeed)
+        correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
 
     
     arlo.stop()

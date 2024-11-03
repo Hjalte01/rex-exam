@@ -63,7 +63,6 @@ class Robot(object):
         str_val=self.serialRead.readline()
         return str_val
 
-
     def _power_checker(self, power):
         """Checks if a power value is in the set {0, [30;127]}.
            This is an internal utility function."""

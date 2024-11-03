@@ -23,7 +23,7 @@ class ParticleFilter(object):
     
 
     def update(self, control: tuple[float, float], poses: list[Position], visualize: bool=False):
-        if (len(poses) < 2):
+        if (len(self.grid.markers) < 2):
             return None, None
         
         noise_dist = control[0]/10

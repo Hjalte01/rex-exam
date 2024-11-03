@@ -43,13 +43,22 @@ class Detect(State):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.count = 0
-        self.cycle_theta = 0
+        self.cycle_theta = 0.10 # a cycle isn't 30 
         self.first_theta = 0.0
         self.first_id = None
+        self.map = dict()
+        
     
     def run(self, robot: ExamRobot):
         robot.stop()
         sleep(0.2)
+        
+        if self.cycle_theta != 100 and self.count*self.cycle_theta >= 2*np.pi:
+            print("[LOG] {0} - Detect complete.".format(self))
+            self.done(True)
+            self.fire(DetectEvent(DetectEvent.COMPLETE))
+            print(", ".join([m.__str__() for m in robot.grid.markers]))
+            return
 
         frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
@@ -59,49 +68,61 @@ class Detect(State):
             robot.go_diff(40, 40, 1, 0)
             print(f"heading: {np.rad2deg(robot.heading)}")
             print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
-            sleep(0.1)
+            sleep(0.01)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
             corners, 
-            self.marker_size, 
+            self.marker_size*0.001, 
             self.cam_matrix,
             self.dist_coeffs
         )
 
         for (rvec, tvec, id) in zip(rvecs, tvecs, ids):
-            self.fire(DetectEvent(DetectEvent.DETECTED, id=id))
+            
+            orientation = rvec_to_rmatrix(rvec)
 
             if any(m.id == id[0] for m in robot.grid.markers):
+                # print(f"self.map[id[{id[0]}]] = {orientation[1]}")
+                # self.map[id[0]].append(orientation[1])
                 continue
+            self.fire(DetectEvent(DetectEvent.DETECTED, id=id[0]))
 
-            orientation = rvec_to_rmatrix(rvec)
-            theta = (2*np.pi)*np.abs((robot.heading + orientation[1])/(2*np.pi))
+            theta = robot.heading + orientation[1]
             delta = tvec_to_euclidean(tvec)
+            # print("delta, ", delta)
+            # print(f"self.map[id[{id[0]}]] = {orientation[1]}")
+            # self.map.setdefault(id[0], [orientation[1]])
 
-            if self.first_id is None:
-                self.first_id = id[0]
-                self.first_theta = theta
-            elif self.first_id != id[0]:
-                print("theta={0}".format(theta))
-                self.cycle_theta = (theta - self.first_theta)/self.count
-            
-            # all ids unique then go on else "contine" to the next iteration - only include the same marker id once 
-            # if all(m.id != id[0] for m in robot.grid.markers):
+
             robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
             print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
-        if self.count*self.cycle_theta >= 2*np.pi:
-            print("[LOG] {0} - Detect complete.".format(self))
-            self.done(True)
-            self.fire(DetectEvent(DetectEvent.COMPLETE))
-            print(", ".join([m.__str__() for m in robot.grid.markers]))
-            return
+        # sum_delta = 0
+        # n_delta = 0
+        # for _, orientations in self.map.items():
+        #     if len(orientations) < 2:
+        #         continue
+        #     for index in range(len(orientations)-1):
+        #         sum_delta += orientations[index] - orientations[index+1]
+        #     n_delta += len(orientation)-1
+        #     # if delta < self.cycle_theta:
+        # if n_delta:
+        #     delta = sum_delta / n_delta
+        #     self.cycle_theta = delta
+
+
         self.count += 1
+        # if len(robot.grid.markers) < 2:
+            # our estamate
         robot.heading = self.count*self.cycle_theta
+        # else:
+        #     # pf estimate
+            
+
         robot.go_diff(40, 40, 1, 0)
-        print(f"heading: {np.rad2deg(robot.heading)}")
-        print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
-        sleep(0.1)
+        # print(f"heading: {np.rad2deg(robot.heading)}")
+        # print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
+        sleep(0.01)
 
             

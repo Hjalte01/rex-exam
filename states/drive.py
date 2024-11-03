@@ -50,33 +50,26 @@ class Drive(State):
 
         if theta - offset < robot.heading:
             robot.go_diff(40, 40, 0, 1)
-            robot.log_file.write("[LOG] {0} - Rotating left to {1} with heading {2}.".format(self, theta, robot.heading))
             return
         elif theta + offset > robot.heading:
             robot.go_diff(40, 40, 1, 0)
-            robot.log_file.write("[LOG] {0} - Rotating right to {1} with heading {2}.".format(self, theta, robot.heading))
             return
         else:
             robot.go_diff(40, 40, 1, 1)
-            robot.log_file.write("[LOG] {0} - Driving to {1}.".format(self, self.target))
-
 
         if np.sqrt(dx**2 + dy**2) >= self.perimeter:
             return
 
         if len(self.path):
-            robot.log_file.write("[LOG] {0} - Visited cell {1}.".format(self, self.target))
             self.fire(DriveEvent(DriveEvent.NODE_VISITED, self.target))
             self.target = self.path.pop()
             return
         else:
             robot.stop()
-            robot.log_file.write("[LOG] {0} - Visited goal {1}.".format(self, self.target))
             self.moving = False
             self.fire(DriveEvent(DriveEvent.GOAL_VISITED, self.target))
         
         if not len(self.ids) and not len(self.path):
             robot.stop()
-            robot.log_file.write("[LOG] {0} - Visited all goals.".format(self))
             self.fire(DriveEvent(DriveEvent.COMPLETE))
             self.done(True)

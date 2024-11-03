@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import List
 import numpy as np
 import cv2
 from cv2 import aruco
@@ -25,7 +25,7 @@ def rvec_to_rmatrix(v):
     return [x, y, z]
 
 class Estimate(Task):
-    def __init__(self, aruco_dict, marker_size, cam_matrix, dist_coeffs, initial_control: Tuple[float, float], grid: Grid):
+    def __init__(self, aruco_dict, marker_size, cam_matrix, dist_coeffs, initial_control: List[float], grid: Grid):
         super().__init__()
         self.aruco_dict = aruco_dict
         self.marker_size = marker_size
@@ -38,10 +38,13 @@ class Estimate(Task):
         self.last = None
 
     def run(self, robot: ExamRobot):
+        if len(robot.grid.markers) < 2:
+            return
+
         frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
 
-        if ids is None or len(ids) < 2: # Python might not shortcircuit
+        if ids is None or any(len(x) < 2 for x in ids): # Python might not shortcircuit
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(

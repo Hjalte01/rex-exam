@@ -39,6 +39,8 @@ def handle_calibrate_complete(e: CalibrateEvent):
         cam_matrix=e.cam_matrix,
         dist_coeffs=e.dist_coeffs
     )
+    e.robot.done(True)
+    e.origin.done(True)
 
 def handle_detect_complete(e: DetectEvent):
     e.robot.switch(Drive.ID)
@@ -68,10 +70,9 @@ def main():
             started = False
             robot.add(Calibrate(PASSES, ARUCO_DICT, BOARD_MARKER_SIZE, BOARD_SHAPE, BOARD_GAP), default=True)
             robot.register(CalibrateEvent.COMPLETE, handle_calibrate_complete)
-            robot.register(CalibrateEvent.PASS_COMPLETE, handle_calibrate_pass_complete)
 
-            for i in range(PASSES):
-                sleep(1)
+            while not robot.done():
+                sleep(2)
                 print("[LOG] pass complte.")
         elif c == 'p':
             frame = robot.capture()

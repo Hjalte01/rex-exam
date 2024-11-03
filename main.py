@@ -31,7 +31,7 @@ ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 PASSES              = 30
 
 def handle_calibrate_pass_complete(e: CalibrateEvent):
-    e.origin.wait()
+    sleep(2)
 
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
@@ -70,10 +70,11 @@ def main():
             started = False
             robot.add(Calibrate(PASSES, ARUCO_DICT, BOARD_MARKER_SIZE, BOARD_SHAPE, BOARD_GAP), default=True)
             robot.register(CalibrateEvent.COMPLETE, handle_calibrate_complete)
-
+            robot.register(CalibrateEvent.PASS_COMPLETE, handle_calibrate_pass_complete)
+            
             while not robot.done():
-                sleep(2)
                 robot.start()
+                robot.wait_for(CalibrateEvent.PASS_COMPLETE)
         elif c == 'p':
             frame = robot.capture()
             cv2.imwrite(

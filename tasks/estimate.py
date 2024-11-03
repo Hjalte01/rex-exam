@@ -65,9 +65,10 @@ class Estimate(Task):
                 self.last = theta
             elif not i:
                 self.first = theta
-
+        print(len(poses))
         for pose in poses:
             print(f"pose: {pose}")
+        
 
         x1, y1 = robot.grid.origo.cx, robot.grid.origo.cy
         (x, y), heading = self.pf.update(self.control, poses)

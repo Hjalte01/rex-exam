@@ -106,8 +106,9 @@ class Detect(State):
                 sum_delta += orientations[index] - orientations[index+1]
             n_delta += len(orientation)-1
             # if delta < self.cycle_theta:
-        delta = sum_delta / n_delta
-        self.cycle_theta = delta
+        if n_delta:
+            delta = sum_delta / n_delta
+            self.cycle_theta = delta
 
 
         self.count += 1

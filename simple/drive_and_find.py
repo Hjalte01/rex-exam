@@ -12,10 +12,15 @@ from pprint import *
 import os, sys
 from time import sleep
 
-# get for the robot module from the parent directory
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# get current directory
+currentdir = os.path.dirname(os.path.realpath(__file__))
+# get parent directory
+parentdir = os.path.dirname(currentdir)
+# add parent directory to path
+sys.path.append(parentdir)
 
-from ..robot import Robot
+import robot
+
 try:
     import picamera2
     print("Camera.py: Using picamera2 module")
@@ -158,7 +163,7 @@ def drive_towards_landmark(distance, angle, arlo, leftSpeed, rightSpeed):
 
 def main():
     # initialize the robot
-    arlo = Robot()
+    arlo = robot.Robot()
 
     # sleep for 2 seconds
     sleep(2)

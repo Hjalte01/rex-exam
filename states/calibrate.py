@@ -32,7 +32,6 @@ class Calibrate(State):
         )
 
     def run(self, robot: ExamRobot):
-        sleep()
         frame = robot.cam.capture()   
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
 

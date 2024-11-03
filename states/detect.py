@@ -107,8 +107,8 @@ class Detect(State):
         self.count += 1
         robot.heading = self.count*self.cycle_theta
         robot.go_diff(40, 40, 1, 0)
-        print(f"heading: {np.rad2deg(robot.heading)}")
-        print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
+        # print(f"heading: {np.rad2deg(robot.heading)}")
+        # print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
         sleep(0.1)
 
             

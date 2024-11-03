@@ -43,7 +43,7 @@ class Detect(State):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.count = 0
-        self.cycle_theta = int(np.inf)
+        self.cycle_theta = 100
         self.first_theta = 0.0
         self.first_id = None
         self.map = dict()
@@ -52,7 +52,7 @@ class Detect(State):
         robot.stop()
         sleep(0.2)
         
-        if self.cycle_theta != int(np.inf) and self.count*self.cycle_theta >= 2*np.pi:
+        if self.cycle_theta != 100 and self.count*self.cycle_theta >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
             self.done(True)
             self.fire(DetectEvent(DetectEvent.COMPLETE))

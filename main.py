@@ -138,8 +138,11 @@ def main():
             # while not robot.done():
             #     robot.wait_for(DetectEvent.COMPLETE)
             # robot.driver.stop()
+            print("a")
             print(robot.get_heading())
+            print("b")
             while True:
+                print("Test")
                 c = (input() + "")[0]
                 print(robot.get_heading())
                 if c == 'q':

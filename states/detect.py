@@ -97,12 +97,17 @@ class Detect(State):
             robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
             print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
+        sum_delta = 0
+        n_delta = 0
         for _, orientations in self.map.items():
             if len(orientations) < 2:
                 continue
-            delta = orientations[0] - orientations[1]
+            for index in range(len(orientations)-1):
+                sum_delta += orientations[index] - orientations[index+1]
+            n_delta += len(orientation)-1
             # if delta < self.cycle_theta:
-            self.cycle_theta = delta
+        delta = sum_delta / n_delta
+        self.cycle_theta = delta
 
 
         self.count += 1

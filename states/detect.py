@@ -112,7 +112,7 @@ class Detect(State):
 
 
         self.count += 1
-        if robot.grid.markers < 2:
+        if len(robot.grid.markers) < 2:
             # our estamate
             robot.heading = self.count*self.cycle_theta
         else:

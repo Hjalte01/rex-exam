@@ -38,6 +38,9 @@ class Estimate(Task):
         self.last = None
 
     def run(self, robot: ExamRobot):
+        if len(robot.grid.markers) < 2:
+            return
+
         frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
 

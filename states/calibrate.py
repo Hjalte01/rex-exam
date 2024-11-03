@@ -35,6 +35,7 @@ class Calibrate(State):
 
         if ids is None:
             return
+        print("[LOG] {0} - Pass complete.".format(self))
         self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE))
         self.corners = np.append(self.corners, corners, axis=0)
         self.ids = np.append(self.ids, ids, axis=0)

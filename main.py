@@ -31,7 +31,7 @@ ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 PASSES              = 30
 
 def handle_calibrate_pass_complete(e: CalibrateEvent):
-    e.origin.wait()
+    sleep(2)
 
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
@@ -39,6 +39,8 @@ def handle_calibrate_complete(e: CalibrateEvent):
         cam_matrix=e.cam_matrix,
         dist_coeffs=e.dist_coeffs
     )
+    e.robot.done(True)
+    e.origin.done(True)
 
 def handle_detect_complete(e: DetectEvent):
     e.robot.switch(Drive.ID)
@@ -69,10 +71,10 @@ def main():
             robot.add(Calibrate(PASSES, ARUCO_DICT, BOARD_MARKER_SIZE, BOARD_SHAPE, BOARD_GAP), default=True)
             robot.register(CalibrateEvent.COMPLETE, handle_calibrate_complete)
             robot.register(CalibrateEvent.PASS_COMPLETE, handle_calibrate_pass_complete)
-
-            for i in range(PASSES):
-                sleep(1)
-                print("[LOG] pass complte.")
+            
+            while not robot.done():
+                robot.start()
+                robot.wait_for(CalibrateEvent.PASS_COMPLETE)
         elif c == 'p':
             frame = robot.capture()
             cv2.imwrite(
@@ -89,7 +91,7 @@ def main():
             if ids is None:
                 continue
 
-            config = np.load(path.abspath("./configs/calibration-test.npz"))
+            config = np.load(path.abspath("./configs/calibration.npz"))
             rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
                 corners, 
                 MARKER_SIZE*0.001, 
@@ -124,7 +126,7 @@ def main():
             # robot.grid.create_marker(robot.grid[3, 1].diffuse(), robot.grid[3, 0][3, 3], 7, LANDMARK_SIZE)
             # estimate.run(robot)
             config = np.load(path.abspath("./configs/calibration.npz"))
-            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (np.sqrt(90**2), 0), robot.grid))
+            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (0, np.pi/2), robot.grid))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
             # robot.add(Drive([11]))
             robot.register(DetectEvent.COMPLETE, handle_detect_complete)

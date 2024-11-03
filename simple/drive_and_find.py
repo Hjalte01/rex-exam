@@ -181,3 +181,5 @@ def main():
 
     cam.stop()
     arlo.stop()
+
+main()

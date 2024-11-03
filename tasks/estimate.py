@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import List
 import numpy as np
 import cv2
 from cv2 import aruco
@@ -25,7 +25,7 @@ def rvec_to_rmatrix(v):
     return [x, y, z]
 
 class Estimate(Task):
-    def __init__(self, aruco_dict, marker_size, cam_matrix, dist_coeffs, initial_control: Tuple[float, float], grid: Grid):
+    def __init__(self, aruco_dict, marker_size, cam_matrix, dist_coeffs, initial_control: Liste[float, float], grid: Grid):
         super().__init__()
         self.aruco_dict = aruco_dict
         self.marker_size = marker_size

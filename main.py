@@ -120,7 +120,7 @@ def main():
             )
         elif c == 'd':
             config = np.load(path.abspath("./configs/calibration.npz"))
-            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (np.sqrt(90**2), 0), robot.grid))
+            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], [np.sqrt(100**2), 0], robot.grid))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
             robot.add(Drive([1, 4, 3, 2, 1]))
             robot.register(DetectEvent.COMPLETE, handle_detect_complete)

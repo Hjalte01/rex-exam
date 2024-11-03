@@ -43,7 +43,7 @@ class Estimate(Task):
 
         frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
-        print(len(ids))
+        print(ids, len(ids))
         if ids is None or len(ids) < 2: # Python might not shortcircuit
             return
         

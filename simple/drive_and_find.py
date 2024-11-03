@@ -81,7 +81,7 @@ def get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_leng
     if ids is not None and marker_id in ids:
         # Get the index of the wanted marker
         index = np.where(ids == marker_id)
-        corners = corners[index]
+        corners = corners[index[0]]
 
         # Estimate the pose of the markers
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(corners, marker_length, cam_matrix, coeff_vector)

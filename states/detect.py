@@ -120,7 +120,6 @@ class Detect(State):
         #     # pf estimate
             
 
-            pass
         robot.go_diff(40, 40, 1, 0)
         # print(f"heading: {np.rad2deg(robot.heading)}")
         # print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")

@@ -7,27 +7,23 @@ import matplotlib.pyplot as plt
 
 # from types import List, Tuple
 
-noise_angle = 5
+noise_angle = 0.2
 sigma_angle = 1/np.sqrt(2*np.pi*np.power(noise_angle, 2))
+noise_dist = 0.1
+sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
 class ParticleFilter(object):
     def __init__(self, n: int, grid: Grid):
         super(ParticleFilter, self).__init__()
         self.n = n
         self.grid = grid
         self.particles = np.ndarray((self.n, 3))
-        self.particles[:, 0] = rnd.uniform(0, len(grid) * grid.zone_size, self.n)
-        self.particles[:, 1] = rnd.uniform(0, len(grid) * grid.zone_size, self.n)
+        self.particles[:, 0] = rnd.uniform(0, len(grid), self.n)
+        self.particles[:, 1] = rnd.uniform(0, len(grid), self.n)
         self.particles[:, 2] = rnd.uniform(0, 2 * np.pi, self.n)
-        self.weights = np.array((self.n))
-        self.weights.fill(1/self.n)
-    
-
-    def update(self, control: tuple[float, float], poses: list[Position], visualize: bool=False):
+ 
+    def update(self, control: tuple[float, float], poses: list[Position]):
         if (len(self.grid.markers) < 2):
             return None, None
-        
-        noise_dist = control[0]/10
-        sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
         
         # Predict step
         # Update where the particles are heading 
@@ -40,55 +36,45 @@ class ParticleFilter(object):
         self.particles[:, 1] += (delta)*np.sin(self.particles[:, 2]) 
         weights = np.ones((self.n, 1))
 
-        if not isinstance(poses, type(None)):
             # Update step 
-            for marker in poses:
-                # print(id, marker)
-                if marker is None:
-                    continue
+        for marker in poses:
 
-                dist = np.sqrt((marker.x - self.particles[:, 0])**2
-                    + (marker.y - self.particles[:, 1])**2)
-                dist = np.array(dist).reshape(-1, 1).transpose()
 
-                marker_vec = np.array((marker.x - self.particles[:, 0], marker.y - self.particles[:, 1]))/dist # el
-                orientation_vec = np.array((np.cos(self.particles[:, 2]), np.sin(self.particles[:, 2]))) # et
-                hat_vec = np.array((-np.sin(self.particles[:, 2]), np.cos(self.particles[:, 2]))) # eth
-                
-                temp1 = np.sum(marker_vec * hat_vec, axis=0).reshape(-1, 1) # el * eth 
-                temp2 = np.sum(marker_vec * orientation_vec, axis=0).reshape(-1, 1)  #, el * et
-                angle = np.sign(temp1) * np.arccos(temp2) # el * eth , el * et
-                angle = np.array(angle)
-                dist = dist.transpose()
-                
-                weights *= sigma_dist 
-                dist_delta = marker.delta - dist
-                noise_term = (2*noise_dist)**2
-                exp_term = -(dist_delta**2)/(noise_term)
-                weights *= np.exp(exp_term) # pose.delta - 
-                # weights *= sigma_dist * np.exp(-(marker.delta - dist)**2/((2*noise_dist)**2)) # pose.delta - 
-                weights *= sigma_angle*np.exp(-(marker.rad - angle)**2/((2*noise_angle)**2)) # pose.rad -
+            dist = np.sqrt((marker.x - self.particles[:, 0])**2
+                + (marker.y - self.particles[:, 1])**2)
+            dist = np.array(dist).reshape(-1, 1).transpose()
+
+            marker_vec = np.array((marker.x - self.particles[:, 0], marker.y - self.particles[:, 1]))/dist # el
+            orientation_vec = np.array((np.cos(self.particles[:, 2]), np.sin(self.particles[:, 2]))) # et
+            hat_vec = np.array((-np.sin(self.particles[:, 2]), np.cos(self.particles[:, 2]))) # eth
             
+            temp1 = np.sum(marker_vec * hat_vec, axis=0).reshape(-1, 1) # el * eth 
+            temp2 = np.sum(marker_vec * orientation_vec, axis=0).reshape(-1, 1)  #, el * et
+            angle = np.sign(temp1) * np.arccos(temp2) # el * eth , el * et
+            angle = np.array(angle)
+            dist = dist.transpose()
             
-            weights += 1.e-300 
-            weights /= sum(weights)
-            
-            # resample step
-            indexes = self.residual_resample(weights)
-            self.resample_from_index(indexes, weights)
-        else:
-            for i in range(len(weights)):
-                weights[i] = 1/self.n
+            weights *= sigma_dist 
+            dist_delta = marker.delta - dist
+            noise_term = (2*noise_dist)**2
+            exp_term = -(dist_delta**2)/(noise_term)
+            weights *= np.exp(exp_term) # pose.delta - 
+            # weights *= sigma_dist * np.exp(-(marker.delta - dist)**2/((2*noise_dist)**2)) # pose.delta - 
+            weights *= sigma_angle*np.exp(-(marker.rad - angle)**2/((2*noise_angle)**2)) # pose.rad -
+        
+        
+        weights += 1.e-300 
+        weights /= sum(weights)
+        
+        # resample step
+        indexes = self.residual_resample(weights)
+        self.resample_from_index(indexes, weights)
+
         # estimate step
         pos = np.average(self.particles[:, :2], weights=weights, axis=0)
         orientation = np.average(self.particles[:, 2], weights=weights)
 
-        # visualization option
-        if visualize:
-            self.visualize_particles(poses)
-        # return self.grid.transform_xy(pos[0], pos[1]), orientation
-        print(pos[0], pos[1])
-        return (pos[0], pos[1]), orientation
+        return (pos[0]*self.grid.zone_size, pos[1]*self.grid.zone_size), orientation
 
 
     # https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/12-Particle-Filters.ipynb
@@ -140,9 +126,6 @@ class ParticleFilter(object):
         plt.legend()
         plt.draw()
         plt.pause(0.5)  # Pause briefly to allow animation effect
-
-
-
 
     # global index used for plotting our location(green dot) remove this at some point af testing
     index = 1

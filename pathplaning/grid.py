@@ -17,6 +17,9 @@ class Position(object):
         self.x = delta*np.cos(angle)
         self.y = delta*np.sin(angle)
 
+    def __str__(self):
+        return "{0}<x: {1}, y: {2}, theta: {3}>".format(self.__class__.__qualname__, self.x, self.y, self.deg)
+
 class Cell(object):
     """
     Represents a cell in a grid.

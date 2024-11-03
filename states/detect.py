@@ -47,6 +47,7 @@ class Detect(State):
         self.first_theta = 0.0
         self.first_id = None
         self.map = dict()
+        self.last_heading = 0.0
         
     
     def run(self, robot: ExamRobot):
@@ -79,7 +80,6 @@ class Detect(State):
         )
 
         for (rvec, tvec, id) in zip(rvecs, tvecs, ids):
-            
             orientation = rvec_to_rmatrix(rvec)
 
             if any(m.id == id[0] for m in robot.grid.markers):
@@ -110,14 +110,17 @@ class Detect(State):
         # if n_delta:
         #     delta = sum_delta / n_delta
         #     self.cycle_theta = delta
+        print(f"heading: {np.rad2deg(robot.heading)}")
 
 
         self.count += 1
-        # if len(robot.grid.markers) < 2:
+        if len(robot.grid.markers) < 2:
             # our estamate
-        robot.heading = self.count*self.cycle_theta
-        # else:
-        #     # pf estimate
+            robot.heading = self.count*self.cycle_theta
+        else:
+            # pf estimate
+            self.cycle_theta = robot.heading - self.last_heading
+            self.last_heading = robot.heading
             
 
         robot.go_diff(40, 40, 1, 0)

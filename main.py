@@ -21,7 +21,7 @@ LANDMARK_SIZE       = LANDMARK_SIZE # 200mm - The size of a landmark (box with m
 ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
-MARKER_SIZE         = 92.12     # mm - The size of a marker on a landmark. Rally marker == 145
+MARKER_SIZE         = 145     # mm - The size of a marker on a landmark. Rally marker == 145
 BOARD_MARKER_SIZE   = 42.37     # mm - The size of a marker on a board.
 BOARD_SHAPE         = (4, 4)    # m x n
 BOARD_GAP           = 5.34 #26.77      # mm
@@ -131,17 +131,21 @@ def main():
                 robot.wait_for(DriveEvent.GOAL_VISITED)
         elif c == 't':
             config = np.load(path.abspath("./configs/calibration.npz"))
-            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (np.sqrt(90**2), 0), robot.grid))
-            robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
-            # robot.add(Drive([11]))
-            robot.register(DetectEvent.COMPLETE, lambda e: e.robot.done(True))
-            robot.register(DetectEvent.COMPLETE, handle_detect_complete)
-            robot.register(DriveEvent.COMPLETE, handle_drive_complete)
-            robot.start()
+            estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], [np.sqrt(100**2), 0], robot.grid)
+            robot.grid.create_marker(robot.grid[3, 0].diffuse(), robot.grid[3, 0][3, 3], 8, LANDMARK_SIZE)
+            robot.grid.create_marker(robot.grid[3, 1].diffuse(), robot.grid[3, 0][3, 3], 7, LANDMARK_SIZE)
+            estimate.run(robot)
+            # config = np.load(path.abspath("./configs/calibration.npz"))
+            # robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (np.sqrt(90**2), 0), robot.grid))
+            # robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
+            # # robot.add(Drive([11]))
+            # robot.register(DetectEvent.COMPLETE, handle_detect_complete)
+            # # robot.register(DriveEvent.COMPLETE, handle_drive_complete)
+            # robot.start()
 
-            while not robot.done():
-                robot.wait_for(DetectEvent.COMPLETE)
-            robot.driver.stop()
+            # while not robot.done():
+            #     robot.wait_for(DetectEvent.COMPLETE)
+            # robot.driver.stop()
         elif c == 's':
             robot.stop()
         elif c == 'q':

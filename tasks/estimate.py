@@ -43,7 +43,6 @@ class Estimate(Task):
 
         frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
-        print(ids, len(ids))
         if ids is None or len(ids) < 2: # Python might not shortcircuit
             return
         
@@ -56,9 +55,8 @@ class Estimate(Task):
 
         poses = []
         for i, (rvec, tvec) in enumerate(zip(rvecs, tvecs)):
-            print(rvec)
-            print(tvec)
             orientation = rvec_to_rmatrix(rvec[0])
+            print(orientation)
             theta = (robot.heading + orientation[1])%2*np.pi
             delta = tvec_to_euclidean(tvec[0])
             print(delta, theta)
@@ -68,7 +66,7 @@ class Estimate(Task):
                 self.last = theta
             elif not i:
                 self.first = theta
-        print(len(poses))
+
         for pose in poses:
             print(f"pose: {pose}")
         

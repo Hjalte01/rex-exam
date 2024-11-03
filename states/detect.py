@@ -43,7 +43,7 @@ class Detect(State):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.count = 0
-        self.cycle_theta = np.inf
+        self.cycle_theta = int(np.inf)
         self.first_theta = 0.0
         self.first_id = None
         self.map = dict()
@@ -51,6 +51,13 @@ class Detect(State):
     def run(self, robot: ExamRobot):
         robot.stop()
         sleep(0.2)
+        
+        if self.cycle_theta != int(np.inf) and self.count*self.cycle_theta >= 2*np.pi:
+            print("[LOG] {0} - Detect complete.".format(self))
+            self.done(True)
+            self.fire(DetectEvent(DetectEvent.COMPLETE))
+            print(", ".join([m.__str__() for m in robot.grid.markers]))
+            return
 
         frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
@@ -97,12 +104,6 @@ class Detect(State):
                 self.cycle_theta = delta
 
 
-        if self.count*self.cycle_theta >= 2*np.pi:
-            print("[LOG] {0} - Detect complete.".format(self))
-            self.done(True)
-            self.fire(DetectEvent(DetectEvent.COMPLETE))
-            print(", ".join([m.__str__() for m in robot.grid.markers]))
-            return
         self.count += 1
         robot.heading = self.count*self.cycle_theta
         robot.go_diff(40, 40, 1, 0)

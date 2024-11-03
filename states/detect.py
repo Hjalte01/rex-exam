@@ -83,13 +83,13 @@ class Detect(State):
             delta = tvec_to_euclidean(tvec)
 
             if any(m.id == id[0] for m in robot.grid.markers):
-                self.map[id[0]].append(np.arcsin(orientation[1], delta))
+                self.map[id[0]].append(np.arcsin(orientation[1]/delta))
                 continue
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id[0]))
 
             theta = robot.heading + orientation[1]
 
-            self.map.setdefault(id[0], [np.arcsin(orientation[1], delta)])
+            self.map.setdefault(id[0], [np.arcsin(orientation[1]/ delta)])
 
 
             robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])

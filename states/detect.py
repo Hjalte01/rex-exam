@@ -110,6 +110,8 @@ class Detect(State):
         # if n_delta:
         #     delta = sum_delta / n_delta
         #     self.cycle_theta = delta
+        print(f"heading: {np.rad2deg(robot.heading)}")
+
 
         self.count += 1
         if len(robot.grid.markers) < 2:

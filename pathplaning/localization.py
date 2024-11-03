@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 noise_angle = 0.2
 sigma_angle = 1/np.sqrt(2*np.pi*np.power(noise_angle, 2))
-noise_dist = 0.01
+noise_dist = 0.1
 sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
 class ParticleFilter(object):
     def __init__(self, n: int, grid: Grid):

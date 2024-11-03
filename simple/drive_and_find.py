@@ -112,7 +112,7 @@ def search_for_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, mark
     
 
 # Correct the angle of the robot while driving towards the landmark
-def correct_angle(angle, arlo, leftSpeed, rightSpeed):
+def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
     """
     Correct the angle of the robot by stopping and turning towards the landmark.
     """
@@ -120,7 +120,7 @@ def correct_angle(angle, arlo, leftSpeed, rightSpeed):
         while abs(angle) > 0.05:
             arlo.stop()
             # Get angle between the robot and the landmark
-            distance, angle = get_landmark(cam, img_dict, cam_matrix, coeff_vector, marker_length)
+            distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
             if angle == None:
                 break
             # Turn left correction
@@ -134,7 +134,7 @@ def correct_angle(angle, arlo, leftSpeed, rightSpeed):
  
 
 
-def drive_towards_landmark(distance, angle, arlo, leftSpeed, rightSpeed):
+def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpeed):
     """
     Drive the robot towards the landmark and keep updating the distance and angle between the robot and the landmark
     """
@@ -146,7 +146,7 @@ def drive_towards_landmark(distance, angle, arlo, leftSpeed, rightSpeed):
         print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
 
         # Update the distance and angle between the robot and the landmark
-        distance, angle = get_landmark(cam, img_dict, cam_matrix, coeff_vector, marker_length)
+        distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
 
         if distance == None:
             break
@@ -181,7 +181,7 @@ def main():
         distance, angle = search_for_landmark(landmark, cam, img_dict, cam_matrix, coeff_vector, marker_length, arlo, leftSpeed, rightSpeed)
 
         # Drive towards the landmark
-        drive_towards_landmark(distance, angle, arlo, leftSpeed, rightSpeed)
+        drive_towards_landmark(landmark, distance, angle, arlo, leftSpeed, rightSpeed)
 
     cam.stop()
     arlo.stop()

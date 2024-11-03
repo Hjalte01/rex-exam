@@ -88,6 +88,7 @@ class Detect(State):
 
             theta = robot.heading + orientation[1]
             delta = tvec_to_euclidean(tvec)
+            print("delta, ", delta)
 
             self.map.setdefault(id[0], [orientation[1]])
 

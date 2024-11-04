@@ -1,5 +1,3 @@
-from datetime import datetime
-from os import path
 import cv2
 import numpy as np
 from cv2 import aruco
@@ -7,6 +5,8 @@ from time import sleep
 from examrobot import ExamRobot
 from statedriver import Event, EventType, State
 from pathplaning.grid import Position
+
+K_THETA = 0.1
 
 class DetectEvent(Event):
     DETECTED = EventType("EVENT-DETECT-DETECTED")
@@ -42,19 +42,13 @@ class Detect(State):
         self.marker_size = marker_size
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
-        self.count = 0
-        self.cycle_theta = 0.10 # a cycle isn't 30 
-        self.first_theta = 0.0
-        self.first_id = None
-        self.map = dict()
-        self.last_heading = 0.0
+        self.theta = 0.0
         
-    
     def run(self, robot: ExamRobot):
         robot.stop()
         sleep(0.2)
         
-        if self.cycle_theta != 100 and self.count*self.cycle_theta >= 2*np.pi:
+        if self.theta >= 2*np.pi:
             print("[LOG] {0} - Detect complete.".format(self))
             self.done(True)
             self.fire(DetectEvent(DetectEvent.COMPLETE))
@@ -64,11 +58,8 @@ class Detect(State):
         frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
         if ids is None:
-            self.count += 1
             robot.heading = self.count*self.cycle_theta
             robot.go_diff(40, 40, 1, 0)
-            print(f"heading: {np.rad2deg(robot.heading)}")
-            print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
             sleep(0.01)
             return
         
@@ -83,49 +74,27 @@ class Detect(State):
             orientation = rvec_to_rmatrix(rvec)
 
             if any(m.id == id[0] for m in robot.grid.markers):
-                # print(f"self.map[id[{id[0]}]] = {orientation[1]}")
-                # self.map[id[0]].append(orientation[1])
                 continue
+            
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id[0]))
-
             theta = robot.heading + orientation[1]
             delta = tvec_to_euclidean(tvec)
-            print(f"delta: {delta}, theta: {theta}")
-            # print(f"self.map[id[{id[0]}]] = {orientation[1]}")
-            # self.map.setdefault(id[0], [orientation[1]])
-
-
             robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
             print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
-        # sum_delta = 0
-        # n_delta = 0
-        # for _, orientations in self.map.items():
-        #     if len(orientations) < 2:
-        #         continue
-        #     for index in range(len(orientations)-1):
-        #         sum_delta += orientations[index] - orientations[index+1]
-        #     n_delta += len(orientation)-1
-        #     # if delta < self.cycle_theta:
-        # if n_delta:
-        #     delta = sum_delta / n_delta
-        #     self.cycle_theta = delta
-        print(f"heading: {np.rad2deg(robot.heading)}")
-
-
-        self.count += 1
         if len(robot.grid.markers) < 2:
-            # our estamate
-            robot.heading = self.count*self.cycle_theta
+            # Our estimate
+            # Knowing the actual theta is pointless, as all markers are relative to the robot. 
+            # They may end uå mirrored, but with a good calibration & SIR, it won't matter.
+            # We still track it to measure a revolution.
+            self.theta += K_THETA
+            robot.heading = self.theta
         else:
-            # pf estimate
-            self.cycle_theta = robot.heading - self.last_heading
+            # PF estimate
+            self.theta += robot.heading - self.last_heading
             self.last_heading = robot.heading
             
-
         robot.go_diff(40, 40, 1, 0)
-        # print(f"heading: {np.rad2deg(robot.heading)}")
-        # print(f"count: {self.count}, cycle_theta: {self.cycle_theta}")
         sleep(0.01)
 
             

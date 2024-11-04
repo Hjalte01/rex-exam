@@ -6,12 +6,14 @@ Key Components:
 - RRT (Rapidly-exploring Random Trees):
 
 Used for path planning to navigate the robot through the race track.
-Generates a tree of possible paths from the start to the goal, ensuring efficient exploration of the space.
+Generates a tree of possible paths from the start to the goal, ensuring efficient exploration of the space. 
+Our RRT is implemented with a goal bias, ie. every 25 of a 100 point is sampled to be the goal instead of a random sample.
 
 - Self-Localization (Particle Filter):
 
 Uses a particle filter algorithm to estimate the robot's position and orientation.
 Particles represent possible states of the robot, and their weights are updated based on sensor measurements.
+Our implementation of the particle filter uses residual resampling, which is a sample technique, where the normalized weights selected more frequently given their individual weight. Each weight is normalized by mnultiping it with the sample size. This yields a number, where the integer part is the number of selection of the weight from the sample. The fractional part is also used as a mean to select weights, however for the fractional part, a simpler method, using a binary search for a random number of the cumulative sum, is used.
 
 - Occupancy Grid:
 
@@ -45,13 +47,13 @@ Contains the Drive class and DriveEvent enumeration. This state manages the robo
 - tasks/estimate.py
 Defines the Estimate class and utility functions for pose estimation. This task uses the detected ArUco markers to estimate the robot's position and orientation in the environment.
 
-- tasks/rrt.py
+- pathplanning/rrt.py
 Implements the RRT (Rapidly-exploring Random Trees) algorithm for path planning. This task generates a path from the robot's current position to the goal, avoiding obstacles.
 
-- tasks/localization.py
+- pathplanning/localization.py
 Implements the particle filter algorithm for self-localization. This task estimates the robot's position and orientation based on sensor data and updates the particle weights accordingly.
 
-- tasks/occupancy_grid.py
+- pathplanning/grid.py
 Defines the OccupancyGrid class, which represents the environment as a grid of zones. Each zone can be marked as occupied or free, and the grid can be updated based on sensor data to account for obstacles.
 
 # Interaction Between Files

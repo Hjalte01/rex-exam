@@ -21,52 +21,52 @@ sys.path.append(parentdir)
 
 from robot import Robot
 
-try:
-    import picamera2
-    print("Camera.py: Using picamera2 module")
-except ImportError:
-    print("Camera.py: picamera2 module not available")
-    exit(-1)
+# try:
+#     import picamera2
+#     print("Camera.py: Using picamera2 module")
+# except ImportError:
+#     print("Camera.py: picamera2 module not available")
+#     exit(-1)
 
-# print("OpenCV version = " + cv2.__version__)
+# # print("OpenCV version = " + cv2.__version__)
 
-# Open a camera device for capturing
-imageSize = (1920, 1080)
-FPS = 30
-cam = picamera2.Picamera2()
-frame_duration_limit = int(1/FPS * 1000000) # Microseconds
-# Change configuration to set resolution, framerate
-picam2_config = cam.create_video_configuration({"size": imageSize, "format": 'RGB888'},
-                                                            controls={"FrameDurationLimits": (frame_duration_limit, frame_duration_limit)},
-                                                            queue=False)
-cam.configure(picam2_config) # Not really necessary
-cam.start(show_preview=False)
+# # Open a camera device for capturing
+# imageSize = (1920, 1080)
+# FPS = 30
+# cam = picamera2.Picamera2()
+# frame_duration_limit = int(1/FPS * 1000000) # Microseconds
+# # Change configuration to set resolution, framerate
+# picam2_config = cam.create_video_configuration({"size": imageSize, "format": 'RGB888'},
+#                                                             controls={"FrameDurationLimits": (frame_duration_limit, frame_duration_limit)},
+#                                                             queue=False)
+# cam.configure(picam2_config) # Not really necessary
+# cam.start(show_preview=False)
 
-time.sleep(1)  # wait for camera to setup
+# time.sleep(1)  # wait for camera to setup
 
     
-# Capture an image from the camera
-image = cam.capture_array("main")
-image_width = image.shape[1]
-image_height = image.shape[0]
+# # Capture an image from the camera
+# image = cam.capture_array("main")
+# image_width = image.shape[1]
+# image_height = image.shape[0]
 
-# Get the camera matrix and distortion coefficients
-cam_matrix = np.zeros((3, 3))
-coeff_vector = np.zeros(5)
+# # Get the camera matrix and distortion coefficients
+# cam_matrix = np.zeros((3, 3))
+# coeff_vector = np.zeros(5)
 
-focal_length = 1694.0
-principal_point = (image_width / 2, image_height / 2)
+# focal_length = 1694.0
+# principal_point = (image_width / 2, image_height / 2)
 
-cam_matrix[0, 0] = focal_length  # f_x
-cam_matrix[1, 1] = focal_length  # f_y
-cam_matrix[0, 2] = principal_point[0]  # c_x
-cam_matrix[1, 2] = principal_point[1]  # c_y
-cam_matrix[2, 2] = 1.0
+# cam_matrix[0, 0] = focal_length  # f_x
+# cam_matrix[1, 1] = focal_length  # f_y
+# cam_matrix[0, 2] = principal_point[0]  # c_x
+# cam_matrix[1, 2] = principal_point[1]  # c_y
+# cam_matrix[2, 2] = 1.0
 
-marker_length = 0.145 # meters
+# marker_length = 0.145 # meters
 
-# get the dictionary for the aruco markers
-img_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250) # As per the assignment
+# # get the dictionary for the aruco markers
+# img_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250) # As per the assignment
 
 
 def get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length):
@@ -130,12 +130,12 @@ def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
             if angle > orientation_threshold:
                 print("Turning left")
                 arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
-                sleep(0.02)
+                sleep(0.05)
             # Right turn correction
             elif angle < orientation_threshold:
                 print("Turning right")
                 arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
-                sleep(0.02)
+                sleep(0.05)
  
 
 
@@ -147,20 +147,18 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
     correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
 
     # Drive towards the landmark
-    while distance > 0.50:
+    while distance == None or distance > 0.4:
         print("Driving towards landmark, distance: ", distance)
-        arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
+        print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
 
         # Update the distance and angle between the robot and the landmark
         distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
 
-        if distance == None:
+
+        if arlo.read_front_ping_sensor() < 200:
+            print("obstacle detected in front")
+            print("Distance: ", arlo.read_front_ping_sensor())
             break
-
-        # Turn correction
-        correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
-
-    print("distance: ", distance)
 
     
     arlo.stop()
@@ -179,24 +177,31 @@ def main():
 
     # set the speed of the robot
     left_motor_diff = 0.920
-    leftSpeed = 40*left_motor_diff
-    rightSpeed = 40
+    leftSpeed = 50
+    rightSpeed = 50
 
-    # Wanted landmarks to visit
-    landmark = 8
+    # # Wanted landmarks to visit
+    # landmark = 8
 
-    # for landmark in wanted_landmarks:
-    # Get the distance and angle between the robot and the landmark
-    print("Searching for landmark: ", landmark)
-    distance, angle = search_for_landmark(landmark, cam, img_dict, cam_matrix, coeff_vector, marker_length, arlo, leftSpeed, rightSpeed)
-    print("Distance: ", distance)
-    print("Angle: ", angle)
+    arlo.go_diff(leftSpeed, leftSpeed, 1, 1)
+    sleep(3)
 
-    # Drive towards the landmark
-    print("Driving towards landmark: ", landmark)
-    drive_towards_landmark(landmark, distance, angle, arlo, leftSpeed, rightSpeed)
-
-    cam.stop()
     arlo.stop()
+
+    # # for landmark in wanted_landmarks:
+    # # Get the distance and angle between the robot and the landmark
+    # print("Searching for landmark: ", landmark)
+    # distance, angle = search_for_landmark(landmark, cam, img_dict, cam_matrix, coeff_vector, marker_length, arlo, leftSpeed, rightSpeed)
+    # print("Distance: ", distance)
+    # print("Angle: ", angle)
+
+    # # Drive towards the landmark
+    # print("Driving towards landmark: ", landmark)
+    # drive_towards_landmark(landmark, distance, angle, arlo, leftSpeed, rightSpeed)
+
+    # cam.stop()
+    # arlo.stop()
+
+
 
 main()

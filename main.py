@@ -108,7 +108,8 @@ def main():
             config = np.load(path.abspath(CONFIG_PATH))
             robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
-            robot.add(Drive([1, 4, 3, 2, 1]))
+            # robot.add(Drive([1, 4, 3, 2, 1]))
+            robot.add(Drive([6]))
             robot.register(DetectEvent.COMPLETE, handle_detect_complete)
             robot.register(DriveEvent.COMPLETE, handle_drive_complete)
             robot.start()
@@ -116,8 +117,8 @@ def main():
             while not robot.done():
                 robot.wait_for(DriveEvent.GOAL_VISITED)
         elif c == 't':
-            robot.grid.create_marker(robot.grid[3, 5].diffuse(), robot.grid[3, 5][3, 3], 8, LANDMARK_SIZE)
-            robot.grid.create_marker(robot.grid[3, 3].diffuse(), robot.grid[3, 3][3, 3], 4, LANDMARK_SIZE)
+            # robot.grid.create_marker(robot.grid[3, 5].diffuse(), robot.grid[3, 5][3, 3], 8, LANDMARK_SIZE)
+            # robot.grid.create_marker(robot.grid[3, 3].diffuse(), robot.grid[3, 3][3, 3], 4, LANDMARK_SIZE)
             # robot.grid.create_marker(robot.grid[5, 7].diffuse(), robot.grid[5, 5][3, 3], 7, LANDMARK_SIZE)
 
             # frame = robot.capture()

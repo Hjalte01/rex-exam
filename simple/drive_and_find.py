@@ -108,7 +108,7 @@ def search_for_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, mark
         else:
             # Turn around
             arlo.go_diff(leftSpeed*turn_speed_constant, rightSpeed*turn_speed_constant, 0, 1)
-            sleep(0.1)
+            sleep(0.2)
             arlo.stop()
     
 
@@ -118,7 +118,7 @@ def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
     Correct the angle of the robot by stopping and turning towards the landmark.
     """
     print("angle: ", angle)
-    orientation_threshold = 0.05
+    orientation_threshold = 0.2
     if angle != None:
         while abs(angle) >= orientation_threshold:
             arlo.stop()

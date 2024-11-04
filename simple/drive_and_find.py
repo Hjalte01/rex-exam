@@ -183,6 +183,9 @@ def main():
     # Wanted landmarks to visit
     landmark = 8
 
+    arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
+    sleep(0.5)
+
     # for landmark in wanted_landmarks:
     # Get the distance and angle between the robot and the landmark
     print("Searching for landmark: ", landmark)

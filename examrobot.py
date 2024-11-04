@@ -25,23 +25,16 @@ class ExamRobot(Waitable, Robot):
         Waitable.__init__(self)
         Robot.__init__(self, port)
         self.driver = Driver(self, cycle)
-        self.grid = Grid((0, 4), zone_size, zones, landmark_size)
+        self.grid = Grid((4, 4), zone_size, zones, landmark_size)
         self.cam = Camera(img_size, fps, Camera.Strategy.PI_CAMERA_REQ)
-        self.heading = 90.0
+        self.heading = 0.0
         self.cam_matrix = None
         self.dist_coeffs = None
-        self.log_file = open(
-            path.abspath(
-                "./logs/{0}.txt".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
-            ),
-            "a"
-        )
 
     def __del__(self):
         Robot.__del__(self)
         self.cam.stop()
         self.driver.stop()
-        self.log_file.close()
     
     def capture(self):
         return self.cam.capture()
@@ -79,14 +72,12 @@ def mock():
         def __init__(self, cycle, img_size, fps, zone_size, zones, landmark_size, port='/dev/ttyACM0'):
             Waitable.__init__(self)
             self.driver = Driver(self, cycle)
-            self.heading = 0.5 * np.pi
-            self.grid = Grid((0, 4), zone_size, zones, landmark_size)
-            # self.pf = ParticleFilter(Position(np.sqrt(2*(zone_size/2)**2), 0.25*np.pi), 1000, self.grid) 
+            self.heading = 0.0
+            self.grid = Grid((4, 4), zone_size, zones, landmark_size)
             self.cam = Camera(img_size, fps, Camera.Strategy.TEST)
             self.marker_size = landmark_size
             self.cam_matrix = None
             self.dist_coeffs = None
-            self.__done = False
         def __del__(self):
             pass
         def go_diff(self, x, y, l, r):

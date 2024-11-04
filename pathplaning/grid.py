@@ -25,6 +25,12 @@ class Pose(Position):
         super(Pose, self).__init__(delta, theta)
         self.x = x + delta*np.cos(theta)
         self.y = y + delta*np.sin(theta)
+        
+    def __array__(self):
+        return np.array([self.x, self.y, self.rad])
+    
+    def __getitem__(self, index: np.ndarray):
+        return np.array([self.x, self.y, self.rad])[index]
 
 class Cell(object):
     """

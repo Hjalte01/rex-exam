@@ -11,7 +11,7 @@ from states.drive import Drive, DriveEvent
 from tasks.estimate import Estimate
 
 
-PI_ENV              = True
+PI_ENV              = False
 
 # Driver settings
 CYCLE               = CYCLE     # 50ms
@@ -19,11 +19,11 @@ CYCLE               = CYCLE     # 50ms
 IMG_SIZE            = IMG_SIZE  # (1920, 1080)
 FPS                 = FPS       # 30
 # Grid settings
-LANDMARK_SIZE       = LANDMARK_SIZE # 200mm - The size of a landmark (box with marker).
+LANDMARK_SIZE       = 123.96 #LANDMARK_SIZE # 200mm - The size of a landmark (box with marker).
 ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
-MARKER_SIZE         = 49.58     # mm - The size of a marker on a landmark. Rally marker == 145
+MARKER_SIZE         = 123.96     # mm - The size of a marker on a landmark. Rally marker == 145
 BOARD_MARKER_SIZE   = 31.32 # 23.32     # mm - The size of a marker on a board.
 BOARD_SHAPE         = (5, 5)    # m x n
 BOARD_GAP           = 6.85 # 1.85 #26.77      # mm
@@ -31,11 +31,11 @@ ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
 PASSES              = 30
 LAST_FRAME          = None
-CONFIG_PATH        = path.abspath("./configs/calibration.npz")
+CONFIG_PATH         = path.abspath("./configs/calibration.npz")
 
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
-        path.abspath("./configs/22-09-24T10-10-41.npz"),
+        path.abspath(CONFIG_PATH),
         cam_matrix=e.cam_matrix,
         dist_coeffs=e.dist_coeffs
     )
@@ -116,7 +116,7 @@ def main():
             )
         elif c == 'd':
             config = np.load(path.abspath("./configs/calibration.npz"))
-            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], [np.sqrt(100**2), 0], robot.grid))
+            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
             robot.add(Drive([1, 4, 3, 2, 1]))
             robot.register(DetectEvent.COMPLETE, handle_detect_complete)
@@ -137,25 +137,9 @@ def main():
                 frame
             )
 
-            config = np.load(path.abspath("./configs/calibration-test.npz"))
-            estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], [np.sqrt(100**2), 0], robot.grid)
-            estimate.run(robot)
-            # config = np.load(path.abspath("./configs/calibration.npz"))
-            # estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], [np.sqrt(100**2), 0], robot.grid)
-            # robot.grid.create_marker(robot.grid[3, 0].diffuse(), robot.grid[3, 0][3, 3], 8, LANDMARK_SIZE)
-            # robot.grid.create_marker(robot.grid[3, 1].diffuse(), robot.grid[3, 0][3, 3], 7, LANDMARK_SIZE)
-            # estimate.run(robot)
             config = np.load(CONFIG_PATH)
-            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (0, np.pi/2), robot.grid))
-            robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
-            # robot.add(Drive([11]))
-            robot.register(DetectEvent.COMPLETE, handle_detect_complete)
-            # robot.register(DriveEvent.COMPLETE, handle_drive_complete)
-            robot.start()
-
-            while not robot.done():
-                robot.wait_for(DetectEvent.COMPLETE)
-            robot.driver.stop()
+            estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid)
+            estimate.run(robot)
         elif c == 's':
             robot.stop()
         elif c == 'q':

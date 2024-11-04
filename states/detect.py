@@ -62,7 +62,7 @@ class Detect(State):
             if len(robot.grid.markers) < 2:
                 self.theta += K_THETA
                 robot.heading = self.theta
-            robot.go_diff(40, 40, 1, 0)
+            robot.go_diff(40, 40, 0, 1)
             sleep(0.005)
             return
         
@@ -89,7 +89,7 @@ class Detect(State):
         self.theta += robot.heading - self.last_heading
         self.last_heading = robot.heading
         
-        robot.go_diff(40, 40, 1, 0)
+        robot.go_diff(40, 40, 0, 1)
         sleep(0.005)
 
             

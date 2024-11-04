@@ -177,8 +177,8 @@ def main():
 
     # set the speed of the robot
     left_motor_diff = 0.920
-    leftSpeed = 40*left_motor_diff
-    rightSpeed = 40
+    leftSpeed = 50*left_motor_diff
+    rightSpeed = 50
 
     # Wanted landmarks to visit
     landmark = 8

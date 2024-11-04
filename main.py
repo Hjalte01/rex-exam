@@ -129,9 +129,7 @@ def main():
             # )
 
             config = np.load(CONFIG_PATH)
-            # estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid)
-            # estimate.run(robot)
-
+            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
             robot.register(DetectEvent.COMPLETE, handle_detect_complete)
             robot.start()

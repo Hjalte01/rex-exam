@@ -129,12 +129,12 @@ def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
             if angle > orientation_threshold:
                 print("Turning left")
                 arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
-                sleep(0.1)
+                sleep(0.05)
             # Right turn correction
             elif angle < orientation_threshold:
                 print("Turning right")
                 arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
-                sleep(0.1)
+                sleep(0.05)
  
 
 
@@ -184,18 +184,18 @@ def main():
     sleep(0.5)
 
     # Wanted landmarks to visit
-    wanted_landmarks = [8, 7]
+    landmark = 8
 
-    for landmark in wanted_landmarks:
-        # Get the distance and angle between the robot and the landmark
-        print("Searching for landmark: ", landmark)
-        distance, angle = search_for_landmark(landmark, cam, img_dict, cam_matrix, coeff_vector, marker_length, arlo, leftSpeed, rightSpeed)
-        print("Distance: ", distance)
-        print("Angle: ", angle)
+    # for landmark in wanted_landmarks:
+    # Get the distance and angle between the robot and the landmark
+    print("Searching for landmark: ", landmark)
+    distance, angle = search_for_landmark(landmark, cam, img_dict, cam_matrix, coeff_vector, marker_length, arlo, leftSpeed, rightSpeed)
+    print("Distance: ", distance)
+    print("Angle: ", angle)
 
-        # Drive towards the landmark
-        print("Driving towards landmark: ", landmark)
-        drive_towards_landmark(landmark, distance, angle, arlo, leftSpeed, rightSpeed)
+    # Drive towards the landmark
+    print("Driving towards landmark: ", landmark)
+    drive_towards_landmark(landmark, distance, angle, arlo, leftSpeed, rightSpeed)
 
     cam.stop()
     arlo.stop()

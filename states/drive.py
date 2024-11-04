@@ -38,6 +38,7 @@ class Drive(State):
 
             if self.target is None:
                 self.done(True)
+                self.ids = [next] + self.ids
                 return
             
             self.path = rrt_path(robot.grid, robot.grid.origo, self.target)

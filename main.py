@@ -126,20 +126,29 @@ def main():
             while not robot.done():
                 robot.wait_for(DriveEvent.GOAL_VISITED)
         elif c == 't':
-            robot.grid.create_marker(robot.grid[5, 3].diffuse(), robot.grid[5, 3][3, 3], 8, LANDMARK_SIZE)
-            robot.grid.create_marker(robot.grid[5, 5].diffuse(), robot.grid[5, 5][3, 3], 7, LANDMARK_SIZE)
+            # robot.grid.create_marker(robot.grid[5, 3].diffuse(), robot.grid[5, 3][3, 3], 8, LANDMARK_SIZE)
+            # robot.grid.create_marker(robot.grid[5, 5].diffuse(), robot.grid[5, 5][3, 3], 7, LANDMARK_SIZE)
+            # robot.grid.create_marker(robot.grid[5, 7].diffuse(), robot.grid[5, 5][3, 3], 7, LANDMARK_SIZE)
 
-            frame = robot.capture()
-            cv2.imwrite(
-                path.abspath(
-                    "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
-                ),
-                frame
-            )
+            # frame = robot.capture()
+            # cv2.imwrite(
+            #     path.abspath(
+            #         "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+            #     ),
+            #     frame
+            # )
 
             config = np.load(CONFIG_PATH)
-            estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid)
-            estimate.run(robot)
+            # estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid)
+            # estimate.run(robot)
+
+            robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
+            robot.register(DetectEvent.COMPLETE, handle_detect_complete)
+            robot.start()
+
+            while not robot.done():
+                robot.wait_for(DetectEvent.DETECTED)
+
         elif c == 's':
             robot.stop()
         elif c == 'q':

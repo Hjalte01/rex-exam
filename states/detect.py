@@ -42,6 +42,7 @@ class Detect(State):
         self.marker_size = marker_size
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
+        self.last_heading = 0.0
         self.theta = 0.0
         
     def run(self, robot: ExamRobot):
@@ -58,7 +59,9 @@ class Detect(State):
         frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
         if ids is None:
-            robot.heading = self.count*self.cycle_theta
+            if len(robot.grid.markers) < 2:
+                self.theta += K_THETA
+                robot.heading = self.theta
             robot.go_diff(40, 40, 1, 0)
             sleep(0.01)
             return

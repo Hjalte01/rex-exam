@@ -73,7 +73,7 @@ def mock():
             Waitable.__init__(self)
             self.driver = Driver(self, cycle)
             self.heading = 0.0
-            self.grid = Grid((4, 4), zone_size, zones, landmark_size)
+            self.grid = Grid((0, 4), zone_size, zones, landmark_size)
             self.cam = Camera(img_size, fps, Camera.Strategy.TEST)
             self.marker_size = landmark_size
             self.cam_matrix = None
@@ -100,7 +100,7 @@ def mock():
         def start(self):
             self.driver.start()
         def stop(self):
-            self.driver.stop()
+            pass
         def done(self, flag=None):
             self.driver.done(flag)
             self.driver.wake()

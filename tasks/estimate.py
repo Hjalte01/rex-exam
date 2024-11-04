@@ -35,7 +35,7 @@ class Estimate(Task):
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
         self.grid = grid
-        self.control = [0, 0.0]
+        self.control = [0, 0.5*np.pi]
         self.pf = ParticleFilter(grid, n)
 
     def run(self, robot: ExamRobot):

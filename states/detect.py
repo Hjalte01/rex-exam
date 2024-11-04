@@ -76,14 +76,13 @@ class Detect(State):
 
         for (rvec, tvec, id) in zip(rvecs, tvecs, ids):
             orientation = rvec_to_rmatrix(rvec)
-
-            if any(m.id == id[0] for m in robot.grid.markers):
+            if any(m.id == int(id[0]) for m in robot.grid.markers):
                 continue
             
             self.fire(DetectEvent(DetectEvent.DETECTED, id=id[0]))
             theta = robot.heading + orientation[1]
             delta = tvec_to_euclidean(tvec)
-            robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
+            robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), int(id[0]))
             print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
         # PF estimate

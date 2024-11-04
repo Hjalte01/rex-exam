@@ -41,7 +41,7 @@ class Drive(State):
                 self.ids = [next] + self.ids
                 return
             
-            self.path = rrt_path(robot.grid, robot.grid.origo, self.target)
+            self.path = rrt_path(robot.grid, robot.grid.origo, self.target, 450)
             self.target = self.path.pop()
             self.moving = True
 

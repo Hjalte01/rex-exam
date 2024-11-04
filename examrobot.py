@@ -25,6 +25,7 @@ class ExamRobot(Waitable, Robot):
         Waitable.__init__(self)
         Robot.__init__(self, port)
         self.driver = Driver(self, cycle)
+        self.estimater = Driver(self, cycle)
         self.grid = Grid((0, 4), zone_size, zones, landmark_size)
         self.cam = Camera(img_size, fps, Camera.Strategy.PI_CAMERA_REQ)
         self.heading = 0.0
@@ -60,8 +61,10 @@ class ExamRobot(Waitable, Robot):
         
     def start(self):
         self.driver.start()
+        self.estimater.start()
 
     def done(self, flag=None):
+        self.estimater.done(flag)
         return self.driver.done(flag)
 
     def stop(self):

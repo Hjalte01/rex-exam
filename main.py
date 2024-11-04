@@ -23,17 +23,18 @@ LANDMARK_SIZE       = LANDMARK_SIZE # 200mm - The size of a landmark (box with m
 ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
-MARKER_SIZE         = 145     # mm - The size of a marker on a landmark. Rally marker == 145
+MARKER_SIZE         = 49.58     # mm - The size of a marker on a landmark. Rally marker == 145
 BOARD_MARKER_SIZE   = 31.32 # 23.32     # mm - The size of a marker on a board.
 BOARD_SHAPE         = (5, 5)    # m x n
 BOARD_GAP           = 6.85 # 1.85 #26.77      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
 PASSES              = 10
+CONFIG_PATH        = path.abspath("./configs/calibration.npz")
 
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
-        path.abspath("./configs/calibration-test-1.npz"),
+        path.abspath("./configs/22-09-24T10-10-41.npz"),
         cam_matrix=e.cam_matrix,
         dist_coeffs=e.dist_coeffs
     )
@@ -87,7 +88,7 @@ def main():
             if ids is None:
                 continue
 
-            config = np.load(path.abspath("./configs/calibration-test-1.npz"))
+            config = np.load(CONFIG_PATH)
             rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
                 corners, 
                 MARKER_SIZE*0.001, 
@@ -121,7 +122,7 @@ def main():
             # robot.grid.create_marker(robot.grid[3, 0].diffuse(), robot.grid[3, 0][3, 3], 8, LANDMARK_SIZE)
             # robot.grid.create_marker(robot.grid[3, 1].diffuse(), robot.grid[3, 0][3, 3], 7, LANDMARK_SIZE)
             # estimate.run(robot)
-            config = np.load(path.abspath("./configs/calibration.npz"))
+            config = np.load(CONFIG_PATH)
             robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], (0, np.pi/2), robot.grid))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
             # robot.add(Drive([11]))

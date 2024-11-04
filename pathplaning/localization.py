@@ -1,6 +1,6 @@
 
-from pathplaning.grid import Position, Grid
-# from grid import Position, Grid
+# from pathplaning.grid import Position, Grid
+from grid import Position, Grid
 import numpy as np
 from numpy import random as rnd
 import matplotlib.pyplot as plt
@@ -60,10 +60,16 @@ class ParticleFilter(object):
         
         weights += 1.e-300 
         weights /= sum(weights)
+
+         # Plot particles before resampling
+        self.plot_particles("Particles before resampling", weights.flatten())
         
         # resample step
         indexes = self.residual_resample(weights)
         self.resample_from_index(indexes, weights)
+
+        # Plot particles after resampling
+        self.plot_particles("Particles after resampling")
 
         # estimate step
         pos = np.average(self.particles[:, :2], weights=weights, axis=0)
@@ -97,3 +103,49 @@ class ParticleFilter(object):
         self.particles[:] = self.particles[indexes]
         weights.resize(len(self.particles))
         weights.fill(1.0/self.n)
+
+
+    def plot_particles(self, title, weights=None):
+        # Multiply particle positions by zone size to get actual positions
+        x = self.particles[:, 0]
+        y = self.particles[:, 1]
+
+        plt.figure(1)
+        plt.clf()
+        if weights is not None:
+            # Normalize weights for plotting
+            # weights_normalized = weights / np.max(weights)
+            # print(weights_normalized)
+            plt.scatter(x, y, s=30, c='blue',label='Particles before resample')
+        else:
+            plt.scatter(x, y, s=30, c='red', label='Particles after resample')
+        
+        plt.title(title)
+        plt.xlabel('X position (mm)')
+        plt.ylabel('Y position (mm)')
+        plt.axis('equal')
+        plt.legend()
+        plt.grid(True)
+        plt.draw()
+        plt.pause(2.5)
+
+
+
+index = (0, 0)
+grid = Grid((index[0], index[1]), 450)
+grid.create_marker(grid[2, 4].diffuse(), grid[2, 4][3, 3], 5)
+grid.create_marker(grid[4, 2].diffuse(), grid[4, 2][3, 3], 6)
+pf = ParticleFilter(5000, grid)
+
+for i in range(10):
+    index = (i, i)
+    poses = []
+    for m in grid.markers:
+        dist = np.sqrt((m.cx/450 - index[0])**2 + (m.cy/450 - index[1])**2) 
+        theta = np.arctan2(m.cy/450 - index[1], m.cx/450 - index[0])
+        print(dist, theta)
+        poses.append(Position(dist, theta))
+
+
+
+    pf.update((1, np.pi/4), poses)

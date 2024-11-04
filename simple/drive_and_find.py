@@ -130,12 +130,12 @@ def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
             if angle > orientation_threshold:
                 print("Turning left")
                 arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
-                sleep(0.1)
+                sleep(0.05)
             # Right turn correction
             elif angle < orientation_threshold:
                 print("Turning right")
                 arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
-                sleep(0.1)
+                sleep(0.05)
  
 
 

@@ -68,6 +68,9 @@ marker_length = 0.145 # meters
 # get the dictionary for the aruco markers
 img_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250) # As per the assignment
 
+# initialize the robot
+arlo = Robot()
+
 
 def get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length):
     """Get the landmark from the camera and return the distance and angle between the robot and a specific landmark"""
@@ -160,13 +163,8 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
 
     return distance, angle
 
-# initialize the robot
-arlo = Robot()
 
 def main():
-    # initialize the robot
-    arlo = Robot()
-
     # sleep for 2 seconds
     sleep(2)
 

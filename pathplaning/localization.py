@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 NOISE_THETA = 0.2
 FACTOR_THETA = 1/np.sqrt(2*np.pi*np.power(NOISE_THETA, 2))
-NOISE_DELTA = 0.05
+NOISE_DELTA = 0.65
 FACTOR_DELTA = 1/np.sqrt(2*np.pi*np.power(NOISE_DELTA, 2))
 
 class ParticleFilter(object):
@@ -22,16 +22,10 @@ class ParticleFilter(object):
         self.particles[:, 1] = rnd.uniform(0, len(grid), self.n)
         self.particles[:, 2] = rnd.uniform(0, 2*np.pi, self.n)
         self.particles[:, 2] %= 2*np.pi
-        # plt.ion()
-        # plt.scatter(self.particles[:, 0], self.particles[:, 1],
-        #     color='k', marker=',', s=1)
-        # plt.draw()
-        # plt.pause(0.01)
  
     def update(self, control: list[float, float], poses: list[Pose]):
         if (len(self.grid.markers) < 2):
             return None, None
-        
         
         # Predict step
         # Update where the particles are heading 

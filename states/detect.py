@@ -58,7 +58,7 @@ class Detect(State):
 
         frame = robot.cam.capture()
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
-        if ids is None:
+        if ids is None or len(ids) < 2:
             if len(robot.grid.markers) < 2:
                 self.theta += K_THETA
                 robot.heading = self.theta
@@ -85,18 +85,10 @@ class Detect(State):
             robot.grid.update(robot.grid.origo, Position(delta, theta % (2 * np.pi)), id[0])
             print("[LOG] {0} - Detected marker {1}.".format(self, id[0]))
 
-        if len(robot.grid.markers) < 2:
-            # Our estimate
-            # Knowing the actual theta is pointless, as all markers are relative to the robot. 
-            # They may end uå mirrored, but with a good calibration & SIR, it won't matter.
-            # We still track it to measure a revolution.
-            self.theta += K_THETA
-            robot.heading = self.theta
-        else:
-            # PF estimate
-            self.theta += robot.heading - self.last_heading
-            self.last_heading = robot.heading
-            
+        # PF estimate
+        self.theta += robot.heading - self.last_heading
+        self.last_heading = robot.heading
+        
         robot.go_diff(40, 40, 1, 0)
         sleep(0.01)
 

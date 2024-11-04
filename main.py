@@ -10,7 +10,6 @@ from states.detect import Detect, DetectEvent
 from states.drive import Drive, DriveEvent
 from tasks.estimate import Estimate
 
-
 PI_ENV              = False
 
 # Driver settings
@@ -19,11 +18,11 @@ CYCLE               = CYCLE     # 50ms
 IMG_SIZE            = IMG_SIZE  # (1920, 1080)
 FPS                 = FPS       # 30
 # Grid settings
-LANDMARK_SIZE       = 123.96 #LANDMARK_SIZE # 200mm - The size of a landmark (box with marker).
+LANDMARK_SIZE       = LANDMARK_SIZE # 200mm - The size of a landmark (box with marker).
 ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
-MARKER_SIZE         = 123.96     # mm - The size of a marker on a landmark. Rally marker == 145
+MARKER_SIZE         = 145     # mm - The size of a marker on a landmark. Rally marker == 145
 BOARD_MARKER_SIZE   = 31.32 # 23.32     # mm - The size of a marker on a board.
 BOARD_SHAPE         = (5, 5)    # m x n
 BOARD_GAP           = 6.85 # 1.85 #26.77      # mm
@@ -115,7 +114,7 @@ def main():
                 )
             )
         elif c == 'd':
-            config = np.load(path.abspath("./configs/calibration.npz"))
+            config = np.load(path.abspath(CONFIG_PATH))
             robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
             robot.add(Drive([1, 4, 3, 2, 1]))
@@ -126,28 +125,28 @@ def main():
             while not robot.done():
                 robot.wait_for(DriveEvent.GOAL_VISITED)
         elif c == 't':
-            # robot.grid.create_marker(robot.grid[5, 3].diffuse(), robot.grid[5, 3][3, 3], 8, LANDMARK_SIZE)
-            # robot.grid.create_marker(robot.grid[5, 5].diffuse(), robot.grid[5, 5][3, 3], 7, LANDMARK_SIZE)
+            robot.grid.create_marker(robot.grid[2, 3].diffuse(), robot.grid[2, 3][3, 3], 8, LANDMARK_SIZE)
+            robot.grid.create_marker(robot.grid[2, 5].diffuse(), robot.grid[2, 5][3, 3], 7, LANDMARK_SIZE)
             # robot.grid.create_marker(robot.grid[5, 7].diffuse(), robot.grid[5, 5][3, 3], 7, LANDMARK_SIZE)
 
-            # frame = robot.capture()
-            # cv2.imwrite(
-            #     path.abspath(
-            #         "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
-            #     ),
-            #     frame
-            # )
+            frame = robot.capture()
+            cv2.imwrite(
+                path.abspath(
+                    "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+                ),
+                frame
+            )
 
             config = np.load(CONFIG_PATH)
-            # estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid)
-            # estimate.run(robot)
+            estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid)
+            estimate.run(robot)
 
-            robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
-            robot.register(DetectEvent.COMPLETE, handle_detect_complete)
-            robot.start()
+            # robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
+            # robot.register(DetectEvent.COMPLETE, handle_detect_complete)
+            # robot.start()
 
-            while not robot.done():
-                robot.wait_for(DetectEvent.DETECTED)
+            # while not robot.done():
+                # robot.wait_for(DetectEvent.DETECTED)
 
         elif c == 's':
             robot.stop()

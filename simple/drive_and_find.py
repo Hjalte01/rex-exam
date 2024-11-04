@@ -147,7 +147,7 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
     correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
 
     # Drive towards the landmark
-    while distance == None or distance > 0.50:
+    while distance == None or distance > 0.4:
         print("Driving towards landmark, distance: ", distance)
         arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
 
@@ -159,8 +159,6 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
             print("Distance: ", arlo.read_front_ping_sensor())
             break
 
-        # Turn correction
-        correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
     
     arlo.stop()
     print("Landmark reached")

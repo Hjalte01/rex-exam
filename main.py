@@ -10,7 +10,8 @@ from states.detect import Detect, DetectEvent
 from states.drive import Drive, DriveEvent
 from tasks.estimate import Estimate
 
-PI_ENV              = False
+
+PI_ENV              = True
 
 # Driver settings
 CYCLE               = CYCLE     # 50ms
@@ -25,7 +26,7 @@ ZONES               = ZONES         # 9
 MARKER_SIZE         = 145     # mm - The size of a marker on a landmark. Rally marker == 145. Calibrate marker == 37.02
 BOARD_MARKER_SIZE   = 23.32     # mm - The size of a marker on a board.
 BOARD_SHAPE         = (5, 5)    # m x n
-BOARD_GAP           = 1.85 #26.77      # mm
+BOARD_GAP           = 6.85 # 1.85 #26.77      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
 PASSES              = 30
@@ -33,7 +34,7 @@ LAST_FRAME          = None
 
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
-        path.abspath("./configs/calibration-test.npz"),
+        path.abspath("./configs/calibration-test-1.npz"),
         cam_matrix=e.cam_matrix,
         dist_coeffs=e.dist_coeffs
     )

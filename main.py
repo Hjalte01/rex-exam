@@ -23,14 +23,13 @@ ZONE_SIZE           = ZONE_SIZE     # 450mm
 ZONES               = ZONES         # 9
 # Aruco settings
 MARKER_SIZE         = 145     # mm - The size of a marker on a landmark. Rally marker == 145
-BOARD_MARKER_SIZE   = 31.32 # 23.32     # mm - The size of a marker on a board.
+BOARD_MARKER_SIZE   = 25.32 # 23.32     # mm - The size of a marker on a board.
 BOARD_SHAPE         = (5, 5)    # m x n
-BOARD_GAP           = 6.85 # 1.85 #26.77      # mm
+BOARD_GAP           = 1.85 # 1.85 #26.77      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
 PASSES              = 30
-LAST_FRAME          = None
-CONFIG_PATH         = path.abspath("./configs/calibration.npz")
+CONFIG_PATH         = path.abspath("./configs/calibration-2.npz")
 
 def handle_calibrate_complete(e: CalibrateEvent):
     np.savez(
@@ -39,10 +38,6 @@ def handle_calibrate_complete(e: CalibrateEvent):
         dist_coeffs=e.dist_coeffs
     )
     e.robot.done(True)
-
-def handle_calibrate_pass_complete(e: CalibrateEvent):
-    global LAST_FRAME
-    LAST_FRAME = e.frame
 
 def handle_detect_complete(e: DetectEvent):
     e.robot.switch(Drive.ID)
@@ -70,16 +65,12 @@ def main():
         
         if c == 'c':
             robot.add(Calibrate(PASSES, ARUCO_DICT, BOARD_MARKER_SIZE, BOARD_SHAPE, BOARD_GAP), default=True)
-            robot.register(CalibrateEvent.PASS_COMPLETE, handle_calibrate_pass_complete)
             robot.register(CalibrateEvent.COMPLETE, handle_calibrate_complete)
             robot.start()
             
             while not robot.done():
                 robot.wait_for(CalibrateEvent.PASS_COMPLETE)
-                cv2.imshow("Calibrate output", LAST_FRAME)
-                cv2.waitKey(10)
             robot.stop()
-            cv2.destroyAllWindows()
         elif c == 'p':
             frame = robot.capture()
             cv2.imwrite(

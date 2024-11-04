@@ -116,6 +116,7 @@ def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
     """
     Correct the angle of the robot by stopping and turning towards the landmark.
     """
+    print("angle: ", angle)
     if angle != None:
         while abs(angle) > 0.05:
             arlo.stop()
@@ -124,11 +125,11 @@ def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
             if angle == None:
                 break
             # Turn left correction
-            if angle > 0.1:
+            if angle > 0.05:
                 arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
                 sleep(0.01)
             # Right turn correction
-            elif angle < -0.1:
+            elif angle < -0.05:
                 arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
                 sleep(0.01)
  

@@ -63,11 +63,11 @@ class Estimate(Task):
 
         for pose in poses:
             print(f"pose: {pose}")
-        
         x1, y1 = robot.grid.ox, robot.grid.oy
         (x, y), heading = self.pf.update(self.control, poses)
         robot.grid.update(robot.grid.transform_xy(x, y))
         robot.heading = heading
+        print(robot.heading)
 
         x2, y2 = robot.grid.ox, robot.grid.oy
         delta = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)

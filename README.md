@@ -55,20 +55,24 @@ Implements the particle filter algorithm for self-localization. This task estima
 Defines the OccupancyGrid class, which represents the environment as a grid of zones. Each zone can be marked as occupied or free, and the grid can be updated based on sensor data to account for obstacles.
 
 # Interaction Between Files
-Initialization:
+- Initialization: 
 
 main.py initializes the ExamRobot object and sets up the initial state.
-State Management:
+
+- State Management:
 
 main.py handles user input to switch between different states (calibration, detection, estimation, driving).
 States like Calibrate, Detect, and Drive are added to the robot and managed by the state driver.
-Event Handling:
+
+- Event Handling:
 
 Event handlers in main.py respond to events from different states (e.g., calibration complete, detection complete) and trigger state transitions.
-Task Execution:
+
+- Task Execution:
 
 Tasks like Estimate, RRT, and ParticleFilter are executed within their respective states to perform specific functions (e.g., pose estimation, path planning, localization).
-Data Flow:
+
+- Data Flow:
 
 Sensor data (e.g., images from the camera) is captured by the ExamRobot and processed by tasks like Detect and Estimate.
 Calibration data is saved and loaded from configuration files to ensure accurate pose estimation.

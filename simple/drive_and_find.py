@@ -158,6 +158,8 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
 
         # Correct the angle of the robot while driving towards the landmark
         correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
+    
+    print("distance: ", distance)
 
     
     arlo.stop()

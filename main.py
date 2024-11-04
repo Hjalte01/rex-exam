@@ -29,7 +29,8 @@ BOARD_SHAPE         = (5, 5)    # m x n
 BOARD_GAP           = 6.85 # 1.85 #26.77      # mm
 ARUCO_DICT          = aruco.Dictionary_get(aruco.DICT_6X6_250)
 # Calibrate settings
-PASSES              = 10
+PASSES              = 30
+LAST_FRAME          = None
 CONFIG_PATH        = path.abspath("./configs/calibration.npz")
 
 def handle_calibrate_complete(e: CalibrateEvent):
@@ -39,6 +40,10 @@ def handle_calibrate_complete(e: CalibrateEvent):
         dist_coeffs=e.dist_coeffs
     )
     e.robot.done(True)
+
+def handle_calibrate_pass_complete(e: CalibrateEvent):
+    global LAST_FRAME
+    LAST_FRAME = e.frame
 
 def handle_detect_complete(e: DetectEvent):
     e.robot.switch(Drive.ID)
@@ -65,13 +70,17 @@ def main():
         c = (input(prompt) + "\n").lower()[0]
         
         if c == 'c':
-            started = False
             robot.add(Calibrate(PASSES, ARUCO_DICT, BOARD_MARKER_SIZE, BOARD_SHAPE, BOARD_GAP), default=True)
+            robot.register(CalibrateEvent.PASS_COMPLETE, handle_calibrate_pass_complete)
             robot.register(CalibrateEvent.COMPLETE, handle_calibrate_complete)
             robot.start()
             
             while not robot.done():
                 robot.wait_for(CalibrateEvent.PASS_COMPLETE)
+                cv2.imshow("Calibrate output", LAST_FRAME)
+                cv2.waitKey(10)
+            robot.stop()
+            cv2.destroyAllWindows()
         elif c == 'p':
             frame = robot.capture()
             cv2.imwrite(
@@ -117,6 +126,20 @@ def main():
             while not robot.done():
                 robot.wait_for(DriveEvent.GOAL_VISITED)
         elif c == 't':
+            robot.grid.create_marker(robot.grid[5, 3].diffuse(), robot.grid[5, 3][3, 3], 8, LANDMARK_SIZE)
+            robot.grid.create_marker(robot.grid[5, 5].diffuse(), robot.grid[5, 5][3, 3], 7, LANDMARK_SIZE)
+
+            frame = robot.capture()
+            cv2.imwrite(
+                path.abspath(
+                    "./imgs/capture-{0}.png".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+                ),
+                frame
+            )
+
+            config = np.load(path.abspath("./configs/calibration-test.npz"))
+            estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], [np.sqrt(100**2), 0], robot.grid)
+            estimate.run(robot)
             # config = np.load(path.abspath("./configs/calibration.npz"))
             # estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], [np.sqrt(100**2), 0], robot.grid)
             # robot.grid.create_marker(robot.grid[3, 0].diffuse(), robot.grid[3, 0][3, 3], 8, LANDMARK_SIZE)

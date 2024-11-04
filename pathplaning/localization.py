@@ -7,10 +7,11 @@ import matplotlib.pyplot as plt
 
 # from types import List, Tuple
 
-noise_angle = 0.2
-sigma_angle = 1/np.sqrt(2*np.pi*np.power(noise_angle, 2))
-noise_dist = 0.1
-sigma_dist = 1/np.sqrt(2*np.pi*np.power(noise_dist, 2))
+NOISE_THETA = 0.2
+FACTOR_THETA = 1/np.sqrt(2*np.pi*np.power(NOISE_THETA, 2))
+NOISE_DELTA = 0.05
+FACTOR_DELTA = 1/np.sqrt(2*np.pi*np.power(NOISE_DELTA, 2))
+
 class ParticleFilter(object):
     def __init__(self, n: int, grid: Grid):
         super(ParticleFilter, self).__init__()
@@ -27,21 +28,21 @@ class ParticleFilter(object):
         
         # Predict step
         # Update where the particles are heading 
-        self.particles[:, 2] += rnd.normal(control[1], noise_angle, self.n)
+        self.particles[:, 2] += rnd.normal(control[1], NOISE_THETA, self.n)
         self.particles[:, 2] %= 2 * np.pi 
         
         # Move particles according to control
-        delta = rnd.normal(control[0], noise_dist, self.n)
+        delta = rnd.normal(control[0], NOISE_DELTA, self.n)
         self.particles[:, 0] += (delta)*np.cos(self.particles[:, 2])
         self.particles[:, 1] += (delta)*np.sin(self.particles[:, 2]) 
         weights = np.ones((self.n, 1))
 
             # Update step 
         for marker in poses:
-
-
-            dist = np.sqrt((marker.x - self.particles[:, 0])**2
-                + (marker.y - self.particles[:, 1])**2)
+            dist = np.sqrt(
+                (marker.x - self.particles[:, 0])**2 + 
+                (marker.y - self.particles[:, 1])**2
+            )
             dist = np.array(dist).reshape(-1, 1).transpose()
 
             marker_vec = np.array((marker.x - self.particles[:, 0], marker.y - self.particles[:, 1]))/dist # el
@@ -53,15 +54,9 @@ class ParticleFilter(object):
             angle = np.sign(temp1) * np.arccos(temp2) # el * eth , el * et
             angle = np.array(angle)
             dist = dist.transpose()
-            
-            weights *= sigma_dist 
-            dist_delta = marker.delta - dist
-            noise_term = (2*noise_dist)**2
-            exp_term = -(dist_delta**2)/(noise_term)
-            weights *= np.exp(exp_term) # pose.delta - 
-            # weights *= sigma_dist * np.exp(-(marker.delta - dist)**2/((2*noise_dist)**2)) # pose.delta - 
-            weights *= sigma_angle*np.exp(-(marker.rad - angle)**2/((2*noise_angle)**2)) # pose.rad -
-        
+
+            weights *= FACTOR_DELTA*np.exp(-(marker.delta - dist)**2/((2*NOISE_DELTA)**2)) # pose.delta - 
+            weights *= FACTOR_THETA*np.exp(-(marker.rad - angle)**2/((2*NOISE_THETA)**2)) # pose.rad -
         
         weights += 1.e-300 
         weights /= sum(weights)
@@ -85,7 +80,7 @@ class ParticleFilter(object):
         num_copies = (self.n*np.asarray(weights)).astype(int)
         k = 0
         for i in range(self.n):
-            for _ in range(num_copies[i][0]): # make n copies
+            for _ in range(num_copies[i]): # make n copies
                 indexes[k] = i
                 k += 1
 
@@ -102,90 +97,3 @@ class ParticleFilter(object):
         self.particles[:] = self.particles[indexes]
         weights.resize(len(self.particles))
         weights.fill(1.0/self.n)
-
-
-    def visualize_particles(self, poses: list[Position]):
-        plt.clf()  # Clear the figure for the next frame
-        plt.scatter(self.particles[:, 0], self.particles[:, 1], s=10, c='blue', label="Particles")
-        
-        # Plot the markers
-        for pose in poses:
-            if pose is not None:
-                # show know markers in red and unknow in black
-                if pose.id < 5:
-                    # label just ensure that we don't see 4 markers in legend, but just one unique "marker" that represent all of them
-                    plt.plot(pose.x, pose.y, 'ro', markersize=8, label="Marker" if 'Marker' not in plt.gca().get_legend_handles_labels()[1] else "")
-                else:
-                    plt.plot(pose.x, pose.y, 'ko', markersize=8, label="Unknown Marker" if 'Unknown Marker' not in plt.gca().get_legend_handles_labels()[1] else "")
-        global index
-        plt.plot(index, index, 'c*', markersize=16, label="Robot pos")
-        # plt.xlim(0, 20)
-        # plt.ylim(0, 20)
-        plt.xlabel("X position")
-        plt.ylabel("Y position")
-        plt.legend()
-        plt.draw()
-        plt.pause(0.5)  # Pause briefly to allow animation effect
-
-    # global index used for plotting our location(green dot) remove this at some point af testing
-    index = 1
-    def run_pf(self):
-        n = 9 * 450
-        marker = [[n//2, n, 1], [n, n//2, 2], [n//2, 0, 3], [0, n//2, 4]]
-        # we only know the dist and angle to these markers, 
-        # but use in testing x and y for calculation of dist & angle
-        unknown_marker = [[n//4, n//1.3, 5], [n//1.2, n//3, 6]] 
-        origo_xy = (0, 0)
-
-        for i in range(450//2, n, 450):      
-            global index
-            index = i
-            diag = 450
-            dist = np.sqrt(diag**2 + diag**2) # 45 cm
-            theta = np.pi/4 # 45 deg
-            marker_poses = []
-
-            for mark in marker:
-                marker_dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
-                marker_theta = np.arctan2(mark[1]-i, mark[0]-i) 
-                marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
-                temp = Position(marker_dist, marker_theta, mark[2])
-                temp.x = mark[0]
-                temp.y = mark[1]
-                marker_poses.append(temp)
-
-
-            for mark in unknown_marker:
-                marker_dist = np.sqrt((mark[0] - i)**2 + (mark[1] - i)**2)
-                marker_theta = np.arctan2(mark[1]-i, mark[0]-i) 
-                marker_theta = (marker_theta + 2*np.pi) % (2*np.pi)
-                # marker_theta = marker_theta - theta
-                temp = Position(marker_dist, marker_theta, mark[2])
-                temp.x = temp.x + origo_xy[0] + np.cos(theta)*dist # from origin to x + guess pos.x + current direction * delta
-                temp.y = temp.y + origo_xy[1] + np.sin(theta)*dist
-                # print(f"({temp.x}, {temp.y}) - ({guess[0]}, {guess[1]}) & {marker_dist}")
-                marker_poses.append(temp)
-                
-            origo_xy, orientation = self.update((dist, theta), marker_poses, True)
-            
-            # guess = (cell.zone.col * cell.zone.size + cell.col * cell.size, 
-            #          cell.zone.row * cell.zone.size + cell.row * cell.size)
-            # print(f"""grid[{cell.zone.col}, {cell.zone.row}][{cell.col}, {cell.row}] = ({guess[0]}, {guess[1]})\n zone_size: {cell.zone.size}, cell_size: {cell.size}\n""")
-            print(origo_xy)
-    
-
-def main():
-
-    grid = Grid((0, 0), 450)
-    grid.create_marker(grid[0, 0].diffuse(), grid[0, 0][0, 0], 1)
-    grid.create_marker(grid[0, 8].diffuse(), grid[0, 8][0, 0], 2)
-    grid.create_marker(grid[8, 0].diffuse(), grid[8, 0][0, 0], 3)
-    grid.create_marker(grid[8, 8].diffuse(), grid[8, 8][0, 0], 4)
-    # observered postition from particles to markers
-
-
-    pf = ParticleFilter(100000, grid)
-    pf.run_pf()
-if __name__ == "__main__":
-    main()
-        

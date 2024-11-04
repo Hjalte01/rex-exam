@@ -69,6 +69,8 @@ class Waitable(object):
 
     def wait_for(self, type: EventType):
         with self as lock:
+            if any(t[0].id == type.id for t in Driver.Waiters.__queue__):
+                return
             Driver.Waiters.push((type, self))
             while self.__wait__:
                 lock.wait()
@@ -168,7 +170,6 @@ class Driver(Task):
             try:
                 f(*args)
             except Exception:
-                print("[ERR] An exception was thrown while running state {0}.".format(self.__active_state))
                 traceback.print_exc()
                 if self.__active_state.id == self.__default:
                     self.done(True)
@@ -192,8 +193,11 @@ class Driver(Task):
             with self:
                 while len(Driver.Events.__queue__):
                     e = Driver.Events.__queue__.pop()
-                    if not e.type.id in self.__events.keys():
-                        continue
+                    if e.type.id in self.__events.keys():
+                        e.robot = self.__robot
+                        e.origin = self.__active_state
+                        for f in self.__events[e.type.id]:
+                            self.__call(f, e)
 
                     for val in Driver.Waiters.__queue__:
                         t, w = val
@@ -201,15 +205,17 @@ class Driver(Task):
                             continue
 
                         Driver.Waiters.__queue__.remove(val)
-                        # Waitable.wake(w)
                         w.wake()
 
-                    e.robot = self.__robot
-                    e.origin = self.__active_state
-                    for f in self.__events[e.type.id]:
-                        self.__call(f, e)
-
             sleep(self.__cycle)
+
+        for val in Driver.Waiters.__queue__:
+            t, w = val
+            if t.id != e.type.id:
+                continue
+
+            Driver.Waiters.__queue__.remove(val)
+            w.wake()
                 
     def states(self):
         return (tuple(self.__states.keys()), tuple(self.__states.values()))
@@ -274,11 +280,12 @@ class Driver(Task):
     def stop(self):
         if self.__thread is None:
             return
-        print("[LOG] Stopping driver {0}.".format(self))
+        # print("[LOG] Stopping driver {0}.".format(self))
         with self.__lock__:
             self.__active_state.cancel()
             self.cancel()
-            self.__thread.join(10*self.__cycle)
+            # self.__thread.join(10*self.__cycle)
+            self.__thread.join(5)
             self.__thread = None
 
     def wake(self):

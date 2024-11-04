@@ -93,11 +93,7 @@ def collision(grid: Grid, start: Cell, goal: Cell, ax=None):
             if rxs != 0 and 0 <= t <= 1 and 0 <= u <= 1:
                 return True
             
-    return False
-
-
-    
-                
+    return False              
 
 def rrt_path(grid: Grid, start: Cell, goal: Cell, delta: float, n=100, ax=None):
     tree = Tree(Node(start))

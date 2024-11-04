@@ -32,20 +32,22 @@ class Calibrate(State):
         )
 
     def run(self, robot: ExamRobot):
+        sleep(2)
         frame = robot.cam.capture()   
         corners, ids, _ = aruco.detectMarkers(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), self.aruco_dict)
 
         if ids is None:
-            print("[LOG] {0} - Pass complete. No markers detected".format(self, len(ids)))
+            self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE, frame=frame))
+            print("[LOG] {0} - Pass complete. No markers detected".format(self))
             return
         
-        print("[LOG] {0} - Pass complete.".format(self))
-        self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE))
         self.corners = np.append(self.corners, corners, axis=0)
         self.ids = np.append(self.ids, ids, axis=0)
         self.counts = np.append(self.counts, [len(ids)])
 
         self.passes -= 1
+        self.fire(CalibrateEvent(CalibrateEvent.PASS_COMPLETE, frame=frame))
+        print("[LOG] {0} - Pass complete. Detected {1} markers.".format(self, len(ids)))
         if self.passes > 0:
             return
         
@@ -58,11 +60,11 @@ class Calibrate(State):
             None,
             None
         )
-         
-        robot.log_file.write("[LOG] {0} - Calibrate complete.".format(self))
+
         self.fire(CalibrateEvent(
             CalibrateEvent.COMPLETE, 
             cam_matrix=cam_matrix, 
             dist_coeffs=dist_coeffs
         ))
         self.done(True)
+        print("[LOG] {0} - Calibrate complete.".format(self))

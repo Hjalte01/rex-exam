@@ -8,7 +8,7 @@ class Position(object):
     """
     Represents a position in a 2D plane.
     """
-    def __init__(self, delta: float, angle: float, id: int = 0):
+    def __init__(self, delta: float, angle: float):
         super(Position, self).__init__()
         self.id = id
         self.delta = delta
@@ -19,6 +19,12 @@ class Position(object):
 
     def __str__(self):
         return "{0}<x: {1}, y: {2}, theta: {3}>".format(self.__class__.__qualname__, self.x, self.y, self.deg)
+    
+class Pose(Position):
+    def __init__(self, x: float, y: float, delta: float, theta: float):
+        super(Pose, self).__init__(delta, theta)
+        self.x = x + delta*np.cos(theta)
+        self.y = y + delta*np.sin(theta)
 
 class Cell(object):
     """
@@ -41,15 +47,15 @@ class Cell(object):
 
     @property
     def cx(self) -> float:
-        if self.zone:
-            return self.zone.col*self.zone.size + self.col*self.size + self.size/2 
-        return self.col*self.size + self.size/2
+        if self.zone is None:
+            return self.col*self.size + self.size/2
+        return self.zone.col*self.zone.size + self.col*self.size + self.size/2 
     
     @property
     def cy(self) -> float:
-        if self.zone:
-            return self.zone.row*self.zone.size + self.row*self.size + self.size/2
-        return self.row*self.size + self.size/2
+        if self.zone is None:
+            return self.row*self.size + self.size/2
+        return self.zone.row*self.zone.size + self.row*self.size + self.size/2
     
 class Marker(Cell):
     def __init__(self, size: int, centroid: Cell, id: int):
@@ -109,8 +115,11 @@ class Grid(object):
         for row in range(zones):
             self.zones.append([])
             for col in range(zones):
-                self.zones[row].append(Zone(zone_size, row, col))
+                zone = Zone(zone_size, row, col)
+                self.zones[row].append(zone)
+                self[row, -1][0, 0].zone = zone
         self.origo = self[origo][0, 0]
+        self.origo.free = 0
 
     def __len__(self):
         return len(self.zones)
@@ -118,15 +127,22 @@ class Grid(object):
     def __getitem__(self, rxc: tuple) -> Zone:
         return self.zones[rxc[0]][rxc[1]]
     
+    @property
+    def ox(self) -> float:
+        return self.origo.cx
+    
+    @property
+    def oy(self) -> float:
+        return self.origo.cy
+
     def transform_xy(self, x: float, y: float):
         dx, dy = max(1, min(x, self.zone_size*(len(self)-1))), max(1, min(y, self.zone_size*(len(self)-1)))
         row, col = int(dy//self.zone_size), int(dx//self.zone_size)
         zone = self[row, col]
         if len(zone.cells) == 1:
             return zone[0, 0]
- 
-        sx, sy = 1-col*zone.size/dx, 1-row*zone.size/dy
-        dx, dy = dx*sx, dy*sy
+        
+        dx, dy = dx - col*zone.size, dy - row*zone.size
         row, col = int(dy//zone.cell_size), int(dx//zone.cell_size)
         return zone[row, col]
     
@@ -134,10 +150,9 @@ class Grid(object):
         return self.transform_xy(pos.x, pos.y)
 
     def transform_pose(self, pose: Position):
-        dx, dy = pose.x + self.origo.cx, pose.y + self.origo.cy
         return self.transform_xy(
-            self.origo.cx + pose.delta*np.cos(pose.rad), 
-            self.origo.cy + pose.delta*np.sin(pose.rad)
+            self.ox + pose.delta*np.cos(pose.rad), 
+            self.oy + pose.delta*np.sin(pose.rad)
         )
 
     def transform_cell(self, cell: Cell):
@@ -168,16 +183,6 @@ class Grid(object):
                     cell.zone.diffuse().free = 0
                     cell = self.transform_xy(dx, dy)
                 cell.free = 0
-
-    def nearest_marker(self, cell: Cell):
-        min = np.inf
-        nearest = self.origo
-        for o in self.markers:
-            d = np.sqrt((o.cx-cell.cx)**2+(o.cy-cell.cy)**2)
-            if d < min:
-                min = d
-                nearest = o
-        return nearest
     
     def update(self, origo: Cell, pose: Position=None, id=0):
         self.origo = origo
@@ -191,14 +196,6 @@ class Grid(object):
                 self.create_marker(cell.zone.diffuse(), self.transform_pose(pose), id)
         elif cell.free:
             self.create_marker(cell.zone, cell, id)
-
-    def random_cell(self):
-        row, col = np.random.randint(0, len(self)), np.random.randint(0, len(self))
-        if self[row, col].free:
-            return self[row, col][0, 0]
-        
-        crow, ccol = np.random.randint(0, len(self)), np.random.randint(0, len(self))
-        return self[row, col][crow, ccol]
 
 def main():
     grid = Grid((4, 4), 450)

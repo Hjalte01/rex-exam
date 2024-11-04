@@ -143,6 +143,7 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
 
     # Drive towards the landmark
     while distance > 0.45:
+        print("Driving towards landmark, distance: ", distance)
         arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
 
         # Update the distance and angle between the robot and the landmark
@@ -164,7 +165,7 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
 def main():
     # initialize the robot
     arlo = Robot()
-    
+
     # sleep for 2 seconds
     sleep(2)
 

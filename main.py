@@ -117,7 +117,7 @@ def main():
                 robot.wait_for(DriveEvent.GOAL_VISITED)
         elif c == 't':
             robot.grid.create_marker(robot.grid[3, 5].diffuse(), robot.grid[3, 5][3, 3], 8, LANDMARK_SIZE)
-            robot.grid.create_marker(robot.grid[3, 3].diffuse(), robot.grid[3, 3][3, 3], 7, LANDMARK_SIZE)
+            robot.grid.create_marker(robot.grid[3, 3].diffuse(), robot.grid[3, 3][3, 3], 4, LANDMARK_SIZE)
             # robot.grid.create_marker(robot.grid[5, 7].diffuse(), robot.grid[5, 5][3, 3], 7, LANDMARK_SIZE)
 
             # frame = robot.capture()

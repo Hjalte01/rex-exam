@@ -161,9 +161,7 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
     #     correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
 
     # Drive towards the landmark
-    arlo.move(distance/2)
-    correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
-    arlo.move(distance/2)
+    arlo.move(distance)
 
     print("distance: ", distance)
 

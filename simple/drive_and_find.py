@@ -153,9 +153,6 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
         # Update the distance and angle between the robot and the landmark
         distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
 
-        if distance == None:
-            continue
-
         # Correct the angle of the robot while driving towards the landmark
         correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
     

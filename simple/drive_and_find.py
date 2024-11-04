@@ -19,7 +19,7 @@ parentdir = os.path.dirname(currentdir)
 # add parent directory to path
 sys.path.append(parentdir)
 
-import robot
+from robot import Robot
 
 try:
     import picamera2
@@ -106,7 +106,7 @@ def search_for_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, mark
             return distance, angle
         else:
             # Turn around
-            print(arlo.go_diff(leftSpeed*turn_speed_constant, rightSpeed*turn_speed_constant, 0, 1))
+            arlo.go_diff(leftSpeed*turn_speed_constant, rightSpeed*turn_speed_constant, 0, 1)
             sleep(0.1)
             arlo.stop()
     
@@ -125,11 +125,11 @@ def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
                 break
             # Turn left correction
             if angle > 0.1:
-                print(arlo.go_diff(leftSpeed, rightSpeed, 1, 0))
+                arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
                 sleep(0.01)
             # Right turn correction
             elif angle < -0.1:
-                print(arlo.go_diff(leftSpeed, rightSpeed, 0, 1))
+                arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
                 sleep(0.01)
  
 
@@ -143,7 +143,7 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
 
     # Drive towards the landmark
     while distance > 0.45:
-        print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
+        Robot.go_diff(leftSpeed, rightSpeed, 1, 1)
 
         # Update the distance and angle between the robot and the landmark
         distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
@@ -160,11 +160,10 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
 
     return distance, angle
 
+# initialize the robot
+arlo = Robot()
 
 def main():
-    # initialize the robot
-    arlo = robot.Robot()
-
     # sleep for 2 seconds
     sleep(2)
 

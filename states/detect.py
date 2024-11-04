@@ -63,7 +63,7 @@ class Detect(State):
                 self.theta += K_THETA
                 robot.heading = self.theta
             robot.go_diff(40, 40, 1, 0)
-            sleep(0.01)
+            sleep(0.005)
             return
         
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -90,6 +90,6 @@ class Detect(State):
         self.last_heading = robot.heading
         
         robot.go_diff(40, 40, 1, 0)
-        sleep(0.01)
+        sleep(0.005)
 
             

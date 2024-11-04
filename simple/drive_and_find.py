@@ -146,25 +146,15 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
     # Turn correction
     correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
 
-    temp = distance
-
     # Drive towards the landmark
-    while distance > 0.65:
+    while distance > 0.50:
         print("Driving towards landmark, distance: ", distance)
         arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
 
         # Update the distance and angle between the robot and the landmark
         distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
 
-        if distance == None:
-            break
 
-        temp = distance
-
-    # Drive towards the landmark
-    arlo.move(temp)
-
-    
     print("distance: ", distance)
 
     

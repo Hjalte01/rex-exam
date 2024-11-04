@@ -40,6 +40,7 @@ def handle_calibrate_complete(e: CalibrateEvent):
     e.robot.done(True)
 
 def handle_detect_complete(e: DetectEvent):
+    e.origin.theta = 0.0
     e.robot.switch(Drive.ID)
 
 def handle_drive_complete(e: DriveEvent):

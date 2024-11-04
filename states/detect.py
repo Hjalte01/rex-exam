@@ -6,7 +6,7 @@ from examrobot import ExamRobot
 from statedriver import Event, EventType, State
 from pathplaning.grid import Position
 
-K_THETA = 0.174
+K_THETA = 0.8
 
 class DetectEvent(Event):
     DETECTED = EventType("EVENT-DETECT-DETECTED")

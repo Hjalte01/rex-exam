@@ -27,6 +27,7 @@ class Drive(State):
         
     def run(self, robot: ExamRobot):
         if not self.moving:
+            print(self.ids)
             next = self.ids.pop()
             
             for m in robot.grid.markers:

@@ -43,7 +43,7 @@ class Drive(State):
             self.target = self.path.pop()
             self.moving = True
 
-        dx, dy = self.target.cx - robot.grid.origo.cx, self.target.cy - robot.grid.origo.cy
+        dx, dy = self.target.cx - robot.grid.ox, self.target.cy - robot.grid.oy
         theta = np.arctan2(dy, dx)
         offset = np.pi*2*0.05
 

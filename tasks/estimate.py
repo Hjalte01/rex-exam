@@ -1,11 +1,15 @@
 from typing import List
 import numpy as np
+from numpy import random as rnd
 import cv2
 from cv2 import aruco
-from pathplaning.grid import Position, Grid
-from pathplaning.localization import ParticleFilter
-from statedriver import Task
 from examrobot import ExamRobot
+from statedriver import Task
+from pathplaning.grid import Grid, Pose
+# from pathplaning.localization import ParticleFilter
+from pathplaning.sir import create_particles_normal, create_particles_uniform, particle_filter_update
+
+np.random.seed(2)
 
 def tvec_to_euclidean(v):
     return np.linalg.norm(v)*1000 
@@ -31,11 +35,9 @@ class Estimate(Task):
         self.marker_size = marker_size
         self.cam_matrix = cam_matrix
         self.dist_coeffs = dist_coeffs
-        self.control = initial_control
-        self.particles = 5000
-        self.pf = ParticleFilter(self.particles, grid)
-        self.first = None
-        self.last = None
+        self.control = (0, 0.*np.pi)
+        # self.particles = create_particles_normal(5000, (4.5, 0.5), 0.25*np.pi)
+        self.particles = create_particles_uniform(5000, 9, 2*np.pi)
 
     def run(self, robot: ExamRobot):
         if len(robot.grid.markers) < 2:
@@ -52,32 +54,24 @@ class Estimate(Task):
             self.cam_matrix,
             self.dist_coeffs
         )
+
         poses = []
         for i, (rvec, tvec) in enumerate(zip(rvecs, tvecs)):
             orientation = rvec_to_rmatrix(rvec)
-            print("orientation: ", orientation)
-            print("rvec: ", rvec)
-            print("tvec: ", tvec)
             theta = robot.heading + orientation[1]
             delta = tvec_to_euclidean(tvec)
-            print(f"delta: {delta}, theta: {theta}")
-            poses.append(Position(delta, theta))
-
-            if i + 1 == len(ids):
-                self.last = theta
-            elif not i:
-                self.first = theta
+            poses.append(Pose(robot.grid.ox, robot.grid.oy, delta, theta))
 
         for pose in poses:
             print(f"pose: {pose}")
         
-
-        x1, y1 = robot.grid.origo.cx, robot.grid.origo.cy
-        (x, y), heading = self.pf.update(self.control, poses)
+        x1, y1 = robot.grid.ox, robot.grid.oy
+        # (x, y), heading = self.pf.update(self.control, poses)
+        (x, y), heading, _ = particle_filter_update(self.control, self.particles, poses)
         robot.grid.update(robot.grid.transform_xy(x, y))
         robot.heading = heading
 
-        x2, y2 = robot.grid.origo.cx, robot.grid.origo.cy
+        x2, y2 = robot.grid.ox, robot.grid.oy
         delta = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
         self.control[0] = delta
         self.control[1] = heading

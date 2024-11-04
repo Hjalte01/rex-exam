@@ -25,9 +25,9 @@ class ExamRobot(Waitable, Robot):
         Waitable.__init__(self)
         Robot.__init__(self, port)
         self.driver = Driver(self, cycle)
-        self.grid = Grid((0, 0), zone_size, zones, landmark_size)
+        self.grid = Grid((0, 4), zone_size, zones, landmark_size)
         self.cam = Camera(img_size, fps, Camera.Strategy.PI_CAMERA_REQ)
-        self.heading = 0.0
+        self.heading = 90.0
         self.cam_matrix = None
         self.dist_coeffs = None
         self.log_file = open(
@@ -36,9 +36,6 @@ class ExamRobot(Waitable, Robot):
             ),
             "a"
         )
-        self.__done = False
-
-
 
     def __del__(self):
         Robot.__del__(self)
@@ -72,10 +69,7 @@ class ExamRobot(Waitable, Robot):
         self.driver.start()
 
     def done(self, flag=None):
-        with self:
-            if flag is not None:
-                self.__done = flag
-            return self.__done
+        return self.driver.done(flag)
 
     def stop(self):
         Robot.stop(self)
@@ -86,12 +80,13 @@ def mock():
             Waitable.__init__(self)
             self.driver = Driver(self, cycle)
             self.heading = 0.5 * np.pi
-            self.grid = Grid((0, 0), zone_size, zones, landmark_size)
+            self.grid = Grid((0, 4), zone_size, zones, landmark_size)
             # self.pf = ParticleFilter(Position(np.sqrt(2*(zone_size/2)**2), 0.25*np.pi), 1000, self.grid) 
             self.cam = Camera(img_size, fps, Camera.Strategy.TEST)
             self.marker_size = landmark_size
             self.cam_matrix = None
             self.dist_coeffs = None
+            self.__done = False
         def __del__(self):
             pass
         def go_diff(self, x, y, l, r):
@@ -115,5 +110,9 @@ def mock():
             self.driver.start()
         def stop(self):
             self.driver.stop()
+        def done(self, flag=None):
+            self.driver.done(flag)
+            self.driver.wake()
+            return self.driver.done()
 
     return ExamRobot(CYCLE, IMG_SIZE, FPS, ZONE_SIZE, ZONES, LANDMARK_SIZE)

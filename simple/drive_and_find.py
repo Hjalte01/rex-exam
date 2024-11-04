@@ -71,7 +71,7 @@ img_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250) # As per the assign
 
 def get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length):
     """Get the landmark from the camera and return the distance and angle between the robot and a specific landmark"""
-    sleep(0.1)
+    sleep(0.5)
     # Capture an image from the camera
     image = cam.capture_array("main")
 
@@ -153,7 +153,7 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
 
         # Update the distance and angle between the robot and the landmark
         distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
-        
+
         if distance == None:
             break
 

@@ -137,7 +137,8 @@ def main():
             robot.start()
 
             while not robot.done():
-                robot.wait_for(DetectEvent.DETECTED)
+                robot.wait_for(DetectEvent.COMPLETE)
+            robot.stop()
 
         elif c == 's':
             robot.stop()

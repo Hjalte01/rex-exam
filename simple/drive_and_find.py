@@ -117,21 +117,24 @@ def correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed):
     Correct the angle of the robot by stopping and turning towards the landmark.
     """
     print("angle: ", angle)
+    orientation_threshold = 0.05
     if angle != None:
-        while abs(angle) > 0.05:
+        while abs(angle) >= orientation_threshold:
             arlo.stop()
             # Get angle between the robot and the landmark
             distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
             if angle == None:
                 break
             # Turn left correction
-            if angle > 0.05:
+            if angle > orientation_threshold:
+                print("Turning left")
                 arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
-                sleep(0.01)
+                sleep(0.1)
             # Right turn correction
-            elif angle < -0.05:
+            elif angle < orientation_threshold:
+                print("Turning right")
                 arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
-                sleep(0.01)
+                sleep(0.1)
  
 
 

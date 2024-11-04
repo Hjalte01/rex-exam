@@ -110,7 +110,7 @@ def main():
             robot.estimater.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
             # robot.add(Drive([1, 4, 3, 2, 1]))
-            robot.add(Drive([6]))
+            robot.add(Drive([6, 4]))
             robot.register(DetectEvent.COMPLETE, handle_detect_complete)
             robot.register(DriveEvent.COMPLETE, handle_drive_complete)
             robot.start()

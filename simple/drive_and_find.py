@@ -78,6 +78,7 @@ def get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_leng
     corners, ids, _ = aruco.detectMarkers(image, img_dict)
 
     # check if the wanted marker is in the detected markers
+    print("ids: ", ids)
     if ids is not None and marker_id in ids:
         # Get the index of the wanted marker
         index = np.where(ids == marker_id)
@@ -102,7 +103,7 @@ def search_for_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, mark
     turn_speed_constant = 0.95
     while True:
         distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
-        if distance != None and angle != None:
+        if distance != None:
             return distance, angle
         else:
             # Turn around

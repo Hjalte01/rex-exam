@@ -107,7 +107,7 @@ def main():
             )
         elif c == 'd':
             config = np.load(path.abspath(CONFIG_PATH))
-            robot.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid))
+            robot.estimater.add(Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid))
             robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
             # robot.add(Drive([1, 4, 3, 2, 1]))
             robot.add(Drive([6]))

@@ -184,7 +184,7 @@ def main():
     # landmark = 8
 
     arlo.go_diff(leftSpeed, leftSpeed, 1, 1)
-    sleep(1)
+    sleep(3)
 
     arlo.stop()
 

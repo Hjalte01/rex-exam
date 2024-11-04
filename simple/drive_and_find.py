@@ -149,12 +149,13 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
     # Drive towards the landmark
     while distance == None or distance > 0.4:
         print("Driving towards landmark, distance: ", distance)
-        arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
+        print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
 
         # Update the distance and angle between the robot and the landmark
         distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
 
-        if arlo.read_front_ping_sensor() < 400:
+
+        if arlo.read_front_ping_sensor() < 200:
             print("obstacle detected in front")
             print("Distance: ", arlo.read_front_ping_sensor())
             break

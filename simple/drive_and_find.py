@@ -180,10 +180,6 @@ def main():
     leftSpeed = 40*left_motor_diff
     rightSpeed = 40
 
-    # drive the robot forward
-    arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
-    sleep(2)
-
     # Wanted landmarks to visit
     landmark = 8
 

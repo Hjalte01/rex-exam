@@ -31,7 +31,7 @@ except ImportError:
 # print("OpenCV version = " + cv2.__version__)
 
 # Open a camera device for capturing
-imageSize = (1280, 720)
+imageSize = (1920, 1080)
 FPS = 30
 cam = picamera2.Picamera2()
 frame_duration_limit = int(1/FPS * 1000000) # Microseconds
@@ -147,12 +147,13 @@ def drive_towards_landmark(marker_id, distance, angle, arlo, leftSpeed, rightSpe
     correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)
 
     # Drive towards the landmark
-    while distance == None or distance > 0.3:
+    while distance == None or distance > 0.65:
         print("Driving towards landmark, distance: ", distance)
         arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
 
         # Update the distance and angle between the robot and the landmark
         distance, angle = get_landmark(marker_id, cam, img_dict, cam_matrix, coeff_vector, marker_length)
+
 
         # Correct the angle of the robot while driving towards the landmark
         correct_angle(marker_id, angle, arlo, leftSpeed, rightSpeed)

@@ -130,14 +130,13 @@ def main():
 
             config = np.load(CONFIG_PATH)
             estimate = Estimate(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"], robot.grid)
-            estimate.run()
+            estimate.run(robot)
             # robot.add(Detect(ARUCO_DICT, MARKER_SIZE, config["cam_matrix"], config["dist_coeffs"]), default=True)
             # robot.register(DetectEvent.COMPLETE, handle_detect_complete)
-            robot.start()
 
-            while not robot.done():
-                robot.wait_for(DetectEvent.COMPLETE)
-            robot.stop()
+            # while not robot.done():
+            #     robot.wait_for(DetectEvent.COMPLETE)
+            # robot.stop()
 
         elif c == 's':
             robot.stop()

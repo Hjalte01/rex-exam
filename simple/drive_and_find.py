@@ -183,7 +183,7 @@ def main():
     # Wanted landmarks to visit
     landmark = 8
 
-    arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
+    arlo.go_diff(leftSpeed, leftSpeed, 1, 1)
     sleep(0.5)
 
     # for landmark in wanted_landmarks:

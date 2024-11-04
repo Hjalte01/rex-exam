@@ -180,24 +180,28 @@ def main():
     leftSpeed = 50*left_motor_diff
     rightSpeed = 50
 
-    # Wanted landmarks to visit
-    landmark = 8
+    # # Wanted landmarks to visit
+    # landmark = 8
 
     arlo.go_diff(leftSpeed, leftSpeed, 1, 1)
-    sleep(0.5)
+    sleep(1)
 
-    # for landmark in wanted_landmarks:
-    # Get the distance and angle between the robot and the landmark
-    print("Searching for landmark: ", landmark)
-    distance, angle = search_for_landmark(landmark, cam, img_dict, cam_matrix, coeff_vector, marker_length, arlo, leftSpeed, rightSpeed)
-    print("Distance: ", distance)
-    print("Angle: ", angle)
-
-    # Drive towards the landmark
-    print("Driving towards landmark: ", landmark)
-    drive_towards_landmark(landmark, distance, angle, arlo, leftSpeed, rightSpeed)
-
-    cam.stop()
     arlo.stop()
+
+    # # for landmark in wanted_landmarks:
+    # # Get the distance and angle between the robot and the landmark
+    # print("Searching for landmark: ", landmark)
+    # distance, angle = search_for_landmark(landmark, cam, img_dict, cam_matrix, coeff_vector, marker_length, arlo, leftSpeed, rightSpeed)
+    # print("Distance: ", distance)
+    # print("Angle: ", angle)
+
+    # # Drive towards the landmark
+    # print("Driving towards landmark: ", landmark)
+    # drive_towards_landmark(landmark, distance, angle, arlo, leftSpeed, rightSpeed)
+
+    # cam.stop()
+    # arlo.stop()
+
+
 
 main()
